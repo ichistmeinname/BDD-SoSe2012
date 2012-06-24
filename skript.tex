@@ -1,0 +1,2519 @@
+\documentclass[ngerman]{scrartcl}
+\KOMAoptions{paper=a4}
+\KOMAoptions{fontsize=11pt}
+\KOMAoptions{pagesize=pdftex}
+
+
+%% Spracheinstellungen laden
+\usepackage[ngerman]{babel}
+
+%% Schriftart in der Ausgabe/Eingabe
+\usepackage{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage[latin1]{inputenc}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{listings}
+\usepackage{ulem}
+\usepackage{dsfont}
+\usepackage{empheq}
+\usepackage[colorlinks=true]{hyperref}
+\setlength{\parindent}{0em}
+\geometry{a4paper,top=20mm,bottom=25mm,left=20mm,right=20mm,footskip=10mm}
+
+\pagestyle{myheadings}
+\markright{Binary Decision Diagrams - SoSe 12}
+
+\swapnumbers
+\newtheoremstyle{custom}{10pt}{10pt}{\normalsize}{ }{\bfseries}{
+}{\newline}{ }
+\theoremstyle{custom}
+
+\newtheorem{mdef}{Definition} \numberwithin{mdef}{subsection}
+\newtheorem{mex}[mdef]{Beispiel}
+\newtheorem{ms}[mdef]{Satz}
+\newtheorem{ml}[mdef]{Lemma}
+\newtheorem{mbez}[mdef]{Bezeichnungen}
+\newtheorem{mr}[mdef]{Regel}
+\newtheorem*{ex}{Beispiel}
+\newtheorem*{bw}{Beweis}
+\newtheorem{mk}[mdef]{Konvention}
+\newtheorem{obdd}[mdef]{OBDDs als Zeigergeflecht}
+\newtheorem{algred}[mdef]{Algorithmus Reduce}
+\newtheorem{algval}[mdef]{Auswertungsalgorithmus Value}
+\newtheorem{algsat}[mdef]{Erf\"ullbarkeitsalgorithmus Satisfy}
+\newtheorem{algequ}[mdef]{Algorithmus Equiv}
+\newtheorem{algneg}[mdef]{Algorithmus Negation}
+\newtheorem{algrem}[mdef]{Algorithmus Remove}
+\newtheorem{binsys}[mdef]{Bin\"are Synthese bei QOBDDs}
+\newtheorem{apply-robdd}[mdef]{Algorithmus Apply bei ROBDDs}
+
+\newcommand{\qd}{\begin{flushright}$\square$\end{flushright}}
+\newcommand{\ax}{\mathcal{A}(X)}
+\newcommand{\val}{\underline{val}_v}
+\newcommand{\0}{\mathbf{0}}
+\newcommand{\1}{\mathbf{L}}
+\newcommand{\at}{\mathcal{A}t}
+\newcommand{\ba}{$(V, \sqcap, \sqcup, \bar~, \0, \1)$}
+\newcommand{\bel}{$V: X \rightarrow \mathds{B}$}
+\newcommand{\bol}{\mathds{B}^n \rightarrow \mathds{B}}
+\newcommand{\bolf}{$f: \bol~$}
+\newcommand{\then}{\underline{then}}
+\newcommand{\el}{\underline{else}}
+\newcommand{\var}{\underline{var}}
+\newcommand{\eins}{\underline{eins}}
+\newcommand{\set}{\underline{set}}
+\newcommand{\cons}{\underline{cons}}
+\newcommand{\sg}{$(X,\mathcal{W})~$}
+\newcommand{\gms}{$\lbrack Q; w_1, \dots w_n \rbrack$}
+\newcommand{\W}{\mathcal{W}}
+\newcommand{\ith}{\underline{ith}}
+\newcommand{\ww}{\preccurlyeq _{I}}
+
+\begin{document}
+\begin{titlepage}
+\thispagestyle{empty}
+\begin{small}
+\vfill {Christian-Albrechts-Universit\"at zu Kiel\\ 
+Institut f\"ur Informatik \\ 
+Dozent: Herr Berghammer\\
+Sommersemester 2012}
+\end{small}
+
+\vspace{5cm}
+\begin{center}
+\begin{Large}
+ {\textsf{\textbf{BDD - Binary Decision Diagrams
+}}}
+\end{Large}
+
+\vspace{1cm}
+Mitschrift von Sandra Dylus
+\end{center}
+\begin{small}
+\begin{center}
+Letzte Aktualisierung: \today
+\end{center}
+\end{small}
+\vfill
+
+\begin{small} 
+\textbf{Kontaktadresse}: sad@informatik.uni-kiel.de\\
+\textbf{Hinweis}: Keine Garantie auf Richtigkeit, bei Fehlerfindung bitte kontaktieren.
+\end{small}
+
+\end{titlepage}
+\tableofcontents
+\newpage
+
+\section{Grundlagen}
+\subsection{Aussagenlogik}
+Was ist eine Aussage? - Ein sprachliches Gebilde, von dem es
+Sinn macht, zu sagen, es sei wahr oder falsch.
+
+\begin{ex} Kiel liegt an der Ostsee. Kiel liegt an der Nordsee.\end{ex}
+\begin{ex} $x \in A$, $X=Y$, $\exists x: A(x)$, $\forall x :
+  B(x)$\end{ex}
+
+Kurze Wiederholung von Junktoren:
+\begin{enumerate}
+\item Negation: $\neg A$
+\item Konjunktion: $A \wedge B$
+\item Disjunktion: $A \vee B$
+\item Implikation: $A \rightarrow B$
+\item \"Aquivalenz: $A \leftrightarrow B$
+\end{enumerate}
+
+\begin{mdef} Sei $X$ eine Menge von Aussagenvariablen . Dann ist die
+  Menge $\mathcal{A}(X)$ der \underline{aussagenlogischen Formeln}
+  \"uber $X$ wie folgt definiert:
+\begin{enumerate}
+\item F\"ur alle $a \in X$ gilt $a \in \mathcal{A}(X)$
+\item F\"ur alle $\phi \in \mathcal{A}(X)$ gilt $(\neg \phi) \in
+  \mathcal{A}(X)$
+\item F\"ur alle $\phi, \psi \in \mathcal{A}(X)$ gelten
+  \begin{itemize}
+   \item $(\phi \wedge \psi) \in \mathcal{A}(X)$
+   \item $(\phi \vee \psi) \in \mathcal{A}(X)$
+   \item $(\phi \rightarrow \psi) \in \mathcal{A}(X)$
+   \item $(\phi \leftrightarrow \psi) \in \mathcal{A}(X)$
+    \end{itemize}
+\item Es gibt keine Elemente in $\mathcal{A}(X)$, au\ss er denen, die
+  (1.) bis (3.) zulassen.
+\end{enumerate}
+\qed
+\end{mdef}
+
+Die Negation ($\neg$) bindet am st\"arksten, danach die Konjunktion
+($\wedge$) und Disjunktion ($\vee$) und zuletzt die Implikation
+($\rightarrow$) sowie die \"Aquivalenz ($\leftrightarrow$) (Vorrangregeln).
+
+\begin{ex}
+$X = \{a,b,c,d,e\}$\\
+$(\underbrace{(\underbrace{(\underbrace{\neg a}) \vee (\underbrace{\neg b})}) \vee
+(\underbrace{(\underbrace{c \wedge d}) \wedge e})})$ \\
+$\huge\rightsquigarrow (\neg a \vee \neg b) \vee ((c
+\wedge d) \wedge e)$ \\
+$\rightsquigarrow \neg a \vee \neg b \vee (c
+\wedge d \wedge e)$ \\
+\end{ex}
+
+\begin{mdef}Es ist $\mathds{B}:=\{\mathbf{0}, \mathbf{1}\}$ die Menge der
+  Wahrheitswerte.\qed 
+\end{mdef}
+ 
+\begin{mdef} Eine \emph{Belegung} ist eine Funktion $v: X \rightarrow
+  \mathds{B}$. Zu $a \in X$ hei\ss t $v(a)$ die \emph{Belegung} von
+  $a$ mittels der Belegung. \qed
+\end{mdef}
+
+\begin{mdef} Die Funktionen $\bar{ }: \mathds{B} \rightarrow
+  \mathds{B}, +, \cdot: \mathds{B} \rightarrow \mathds{B}$ sind durch
+  die folgende Tafeln festgelegt:\\
+\begin{tabular}{c|cc}
+$a$ & $0$ & $1$ \\
+\hline $\overline{a}$ & $1$ & $0$
+\end{tabular}
+\begin{tabular}{c|cccc}
++ & & & & \\
+\hline $a$ & $0$ & $0$ & $1$ & $1$ \\
+$b$ & $0$ & $1$ & $0$ & $1$\\
+$a+b$ & $0$ & $1$ & $1$ & $1$ \\
+\end{tabular}
+\begin{tabular}{c|cccc}
+$\cdot$ & & & & \\
+\hline $a$ & $0$ & $0$ & $1$ & $1$ \\
+$b$ & $0$ & $1$ & $0$ & $1$\\
+$a \cdot b$ & $0$ & $0$ & $0$ & $1$ \\
+\end{tabular}
+\end{mdef}
+
+\begin{mdef} Zu einer Belegung $v: X \rightarrow \mathds{B}$ ist der
+  Wert $\underline{val}_v(\phi)$ f\"ur $\phi \in \ax$ induktiv wie
+  folgt festgelegt:
+\begin{enumerate}
+\item $\val(a) = v(a)$ f\"ur $a \in X$
+\item $\val(\neg \phi) = \overline{\val(\phi)}$ f\"ur $\phi \in \ax$
+\item $\val(\phi \vee \psi) = \val(\phi) + \val(\psi)$ f\"ur alle $\phi,
+  \psi \in \ax$
+\item $\val(\phi \wedge \val(\psi) = \val(\phi) \cdot \val(\psi)$
+  f\"ur alle $\phi, \psi \in \ax$
+\item $\val(\phi \rightarrow \psi) = \overline{\val(\phi)} +
+  \val(\psi)$ f\"ur alle $\phi, \psi \in \ax$
+\item $\val(\phi \leftrightarrow \psi) = \val(\phi \rightarrow \psi) \cdot
+  \val(\psi \rightarrow \phi)$ f\"ur alle $\phi, \psi \in \ax$
+\end{enumerate}
+\qed
+\end{mdef}
+
+\begin{mdef}
+Die Relation $\Leftrightarrow ~ \subseteq \ax \times \ax$ ist f\"ur alle
+$\phi, \psi \in \ax$ definiert durch:\\
+\begin{equation*}
+\phi \Leftrightarrow \psi :\Longleftrightarrow \text{ f\"ur alle } v \in
+\mathds{B}^X \text{ gilt } \val(\phi) = \val(\psi)
+\end{equation*}
+$\phi$ und $\psi$ sind \emph{logisch \"aquivalent}, falls $\phi
+\Leftrightarrow \psi$ gilt. \qed
+\end{mdef}
+\begin{mdef}
+Die Relation $\Rightarrow ~ \subseteq \ax \times \ax$ ist f\"ur alle
+$\phi, \psi \in \ax$ definiert durch:\\
+\begin{equation*}
+\phi \Rightarrow \psi :\Longleftrightarrow \text{ f\"ur alle } v \in
+\mathbf{B}^X \text{ gilt, wenn } \val{\phi}=1 \text{, dann }
+\val{\psi}=1
+\end{equation*}
+$\phi$ \emph{impliziert logisch} $\psi$, falls $\phi
+\Rightarrow \psi$ gilt. \qed
+\end{mdef}
+
+\begin{ms} F\"ur alle $\phi, \psi \in \ax$ gelten:
+\begin{enumerate} 
+\item $\phi \Leftrightarrow \psi$ ist \"aquivalent zu $\val(\phi
+  \leftrightarrow \psi)=1$ f\"ur alle $v \in \mathbf{B}^X$
+\item $phi \Rightarrow \psi$ ist \"aquivalent zu $\val(\phi
+  \rightarrow \psi = 1$ f\"ur alle $v \in \mathds{B}^X$
+\end{enumerate}
+\qed
+\end{ms}
+
+\begin{ms} 
+
+\begin{enumerate}
+\item $\Leftrightarrow$ ist \"Aquivalenzrelation auf $\ax$,
+  d.h. reflexiv, symmetrisch und transitiv
+\item $\Rightarrow$ ist Quasiordnung auf $\ax$, d.h. reflexiv und
+  transitiv
+\item f\"ur alle $\phi, \psi, \rho \in \ax$ gilt: $\phi \Rightarrow
+  \psi$ und $\psi \Rightarrow \rho$ impliziert $\phi \Rightarrow \rho$
+\item f\"ur alle $\phi, \psi \in \ax$ gilt $\phi \Leftrightarrow \psi$
+  genau dann, wenn $\phi \Rightarrow \psi$ und $\psi \Rightarrow \phi$
+  gelten
+\end{enumerate}
+\qed
+\end{ms}
+
+\begin{mex}
+Seien $a,b,c \in X$. Dann gilt:
+\begin{eqnarray*}
+a \rightarrow (b \rightarrow c) &\stackrel{Def.}{\Leftrightarrow}& \neg a \vee (b
+\rightarrow c) \\
+&\stackrel{Def.}{\Leftrightarrow}& \neg a \vee (\neg b \vee c)\\
+&\stackrel{Ass.}{\Leftrightarrow}& (\neg a \vee \neg b) \vee c \\
+&\stackrel{De M.}{\Leftrightarrow}& \neg (a \wedge b) \vee c \\
+&\stackrel{Def.}{\Leftrightarrow}& (a \wedge b) \rightarrow c
+\end{eqnarray*}
+\qed
+\end{mex}
+
+\subsection{Boolesche Algebra}
+\begin{mdef} Ein \emph{Verband} ist eine algebraische Struktrur $(V,
+  \sqcap, \sqcup)$ mit $V \not = \emptyset$ und $\sqcap, \sqcup: V \times
+  V \rightarrow V$, so dass f\"ur alle $x, y \in V$ gilt:
+\begin{enumerate}
+\item $x \sqcup (y \sqcup z) = (x \sqcup y) \sqcup z$
+\item $x \sqcap (y \sqcap z) = (x \sqcap y) \sqcap z$
+\item $x \sqcup y = y \sqcup x$
+\item $x \sqcap y = y \sqcap x$
+\item $x \sqcap (y \sqcup x) = x$
+\item $x \sqcup (y \sqcap x) = x$
+\end{enumerate}
+\qed
+\end{mdef}
+
+\begin{mex}
+
+\begin{enumerate}
+
+\item $(\mathds{B}, \cdot, +)$ ist Verband
+\item $(2^M, \cap, \cup)$ ist Verband
+\item $(\mathds{N}, \underline{ggT}, \underline{kgV})$ ist Verband
+\item $(\mathds{N}, \underline{min}, \underline{max})$ ist Verband
+\end{enumerate}
+\qed
+\end{mex}
+
+\begin{ms}
+Es sei $(V, \sqcap, \sqcup)$ ein Verband. Dann gelten f\"ur alle $x,y
+\in V$ die folgenden Eigenschaften:
+\begin{enumerate}
+\item $x \sqcup x = x \text{ und } x \sqcap x = x$
+\item $x \sqcap y = x \Leftrightarrow x \sqcup y = y$
+\end{enumerate}
+\end{ms}
+
+\begin{bw}~\\
+(1)
+\begin{eqnarray*}
+x \sqcup x &=& x \sqcup (x \sqcap (x \sqcup x))\\
+&=& x \sqcup ((x \sqcup x) \sqcap x)\\
+&=& x
+\end{eqnarray*}
+\begin{eqnarray*}
+x \sqcap x &=& x \sqcap (x \sqcup (x \sqcap x)) \\
+&=& x \sqcap ((x \sqcap x) \sqcup x) \\
+&=& x
+\end{eqnarray*} 
+(2) 
+$\Rightarrow$ Sei $x \sqcap y = x$, dann
+\begin{eqnarray*}
+x \sqcup y &=& (x \sqcap y) \sqcup y \\
+&=& y \sqcup (x \sqcap y) \\
+&=& y
+\end{eqnarray*}
+$\Leftarrow$ Sei $x \sqcup y = y$, dann
+\begin{eqnarray*}
+x \sqcap y &=& x \sqcap (x \sqcup y) \\
+&=& x \sqcap (y \sqcup x) \\
+&=& x
+\end{eqnarray*}
+\qed
+\end{bw}
+
+\begin{ms} Es sei $(V, \sqcap, \sqcup)$ ein Verband. Definiert man auf
+  $V$ eine Relation $\sqsubseteq ~\subseteq V \times V$ f\"ur alle
+  $x,y \in V$ durch $x \sqsubseteq y :\Longleftrightarrow x \sqcap y =
+  x (\Longleftrightarrow x \sqcup y = y$, so ist $(V, \sqsubseteq)$
+  eine geordnete Menge.
+\end{ms}
+
+\begin{bw}
+Reflexivit\"at: Sei $x \in V$
+\begin{equation*}
+x \sqsubseteq x \stackrel{Def.}{\Leftrightarrow} x \sqcap x = x
+\stackrel{Satz 1.2.3 (1)}{\Leftrightarrow}
+\underline{wahr}
+\end{equation*}
+Antisymmetrie: Seien $x, y \in V$
+\begin{equation*}
+x \sqsubseteq y \wedge y \sqsubseteq x \stackrel{Def.}{\Leftrightarrow} x \sqcap y = x
+\wedge y \sqcap x = y \stackrel{Komm.}{\Leftrightarrow} x= y
+\end{equation*}
+Transitivit\"at: Seien $x,y, z \in V$
+\begin{eqnarray*}
+x \sqsubseteq y \wedge y \sqsubseteq z
+&\stackrel{Def.}{\Leftrightarrow}& x \sqcap y = x \wedge y \sqcap z =
+y \\
+&\stackrel{Vor. + Ass.}{\Rightarrow}& x \sqcap z = (x \sqcap y) \sqcap z
+= x \sqcap (y \sqcap z) = x \sqcap y = x \\
+&\stackrel{Def.}{\Leftrightarrow}& x \sqsubseteq z
+\end{eqnarray*}
+\qed
+\end{bw}
+
+\begin{ex}
+\begin{enumerate}
+\item $(V, \sqcap, \sqcup, \sqsubseteq)$
+\item $(\mathds{B}, \cdot, +, \Leftarrow)$
+\item $(2^M, \cap, \cup, \subseteq)$
+\item $(\mathds{N}, \underline{ggT}, \underline{kgV}, \setminus)$
+\item $(\mathds{N}, \underline{min}, \underline{max}, \le)$
+\end{enumerate}
+\end{ex}
+
+\begin{mdef} Ein Verband $(V, \sqcap, \sqcup)$ hei\ss t distributiv,
+  falls f\"ur alle $x, y, z \in V$ gelten:
+\begin{enumerate}
+\item $x \sqcup (y \sqcap z) = (x \sqcup y) \sqcap (x \sqcup z)$
+\item $x \sqcap (y \sqcup z) = (x \sqcap y) \sqcup (x \sqcap z)$
+\end{enumerate}
+\qed
+\end{mdef}
+
+\begin{mdef}
+Eine Boolesche Algebra ist eine algebraische Struktur $(V, \sqcap,
+\sqcup, \bar~, \mathbf{0}, \mathbf{L})$ mit $\sqcap, \sqcup: V \times V
+\rightarrow V$, $\bar~: V \rightarrow V$, $\mathbf{0}, \mathbf{L} \in
+V$, so dass folgende Eigenschaften gelten:
+\begin{enumerate}
+\item $(V, \sqcap, \sqcup)$ ist ein Verband
+\item f\"ur alle $x \in V$ gilt $x \sqcap \neg x = \mathbf{0}$ und
+  $x \sqcup \neg x = \mathbf{L}$
+\end{enumerate}
+\qed
+\end{mdef}
+
+Daraus kann man Folgendes observieren:
+\begin{eqnarray*}
+x \sqsubseteq \mathbf{L} &\Leftrightarrow& x \sqcup \mathbf{L} = \mathbf{L} \\
+&\Leftrightarrow& x \sqcup (x \sqcup \neg x) = x \sqcup \neg x\\
+&\Leftrightarrow& (x \sqcup x \sqcup) \neg x = x \sqcup \neg x\\
+&\Leftrightarrow& x \sqcup \neg x = x \sqcup \neg x
+\end{eqnarray*}
+\begin{eqnarray*}
+x \sqsubseteq \mathbf{0} &\Leftrightarrow& \mathbf{0} \sqcap x =
+\mathbf{0} \\
+&\Leftrightarrow& (x \sqcap \neg x) \sqcap x = x \sqcap \neg x \\
+&\Leftrightarrow& x \sqcap \neg x = x \sqcap \neg x
+\end{eqnarray*}
+Also ist $\mathbf{L}$ gr\"o\ss tes Element und $\mathbf{0}$ kleinstes Element von $V$ in $(V,
+\sqsubseteq)$.
+
+\begin{table}[h]
+\center
+\begin{tabular}{c|c|c}
+& Boolesche Algebra & Aussagenlogik \\
+\hline Tr\"agermenge & $V$ & $\ax$ \\
+Operationen & $\sqcap$ & $\wedge$ \\
+& $\sqcup$ & $\vee$ \\
+& $\bar ~$ & $\neg$ \\
+Elemente & $\mathbf{O}$ & \underline{falsch} \\
+& $\mathbf{L}$& \underline{wahr}\\
+Ordnung & $\sqsubseteq$ & $\rightarrow$ \\
+Gleichheit & $=$ & $\leftrightarrow$
+\end{tabular}
+\caption{Vergleich der Booleschen Algebra und Aussagenlogik}
+\end{table}
+
+\begin{ms} 
+Sei $(V, \sqcap, \sqcup, \bar ~, \mathbf{O}, \mathbf{L})$ eine
+Boolesche Algebra. Dann gelten f\"ur alle $x,y \in V$ folgende
+Eigenschaften:
+\begin{enumerate}
+\item $\overline{\overline{x}} = x$
+\item $\overline{x \sqcap y} = \overline{x} \sqcup \overline{y}$ und
+  $\overline{x \sqcup y} = \overline{x} \sqcap \overline{y}$
+\item $x \sqsubseteq y \Leftrightarrow \neg x \sqcap y = \mathbf{L}
+  \Leftrightarrow x \sqcap \neg y = \mathbf{0}$
+\item $\overline{\mathbf{0}} = \mathbf{L}$ und $\overline{\mathbf{L}}
+  = \mathbf{0}$
+\end{enumerate}
+\qed
+\end{ms}
+
+\begin{ms}
+Gilt eine Gleichung $t_1 = t_2$ in allen Booleschen Verb\"anden, so
+gilt auch $t_1^d = t_2^d$, wobei $t_i^d$ aus $t_i$ dadurch entsteht,
+dass man $\sqcap$ und $\sqcup$ sowie $\0$ und $\1$ vertauscht.
+\qed
+\end{ms}
+
+\begin{mdef}
+Es sei $(V,\sqcap, \sqcup, \bar~, \0, \1)$ eine Boolesche Algebra,
+dann hei\ss t $a \in V$ \emph{Atom}, falls $a \not= \0$ und
+f\"ur alle $x \in V$ gilt $x \sqsubseteq a \Rightarrow x = \0 \vee x =
+a$. \\
+$\ax$ sei die Menge der Atome von $V$.
+\qed
+\end{mdef}
+
+Daraus folgern wir: falls $\vert V \vert < \infty$ und $\vert V \vert
+\geq 2$, dann gilt $\at(V) \not= \0$ und f\"ur alle $x \in V$ gibt es
+$a \in \at(V)$ mit $a \sqsubseteq x$.
+
+\begin{ml}
+In einer Booleschen Algebra \ba ~gelten die folgenden Eigenschaften:
+\begin{enumerate}
+\item f\"ur alle $a, b \in \at(V)$ mit $a \not= b$ gilt $a \sqcap b =
+  \0$
+\item f\"ur alle $a \in \at(V)$ mit $x \in V$ gilt $a \not \sqsubseteq
+  x \Rightarrow a \sqsubseteq \overline{x}$
+\item f\"ur alle $a \in \at(V)$ und $x_1, \dots, x_n \in V, n \geq 1$
+  gilt $a \sqsubseteq \bigsqcup_{i=1}^{n} x_i \Leftrightarrow \exists
+  j \in \{1, \dots, n\}: a \sqsubseteq x_j$
+\end{enumerate}
+\end{ml}
+
+\begin{bw} ~\\
+(1) Angenommen $a \sqcap b \not= \0$. Dann gilt $a \sqcap b = a$, da
+$a \sqcap b \sqsubseteq a$, und $a \sqcap b = b$, da $a \sqcap b =
+b$. Also gilt $a=b$ und das widerspricht $a \not= b$.\\
+(2) $a \not \sqsubseteq x \Leftrightarrow a \sqcap \overline{x} \not =
+a$.\\ Da $a \sqcap \overline{x} \sqsubseteq a$ folgt $a \sqcap
+\overline{x} = \0$. Also $a \sqsubset \overline{x}$ nach Satz 1.2.7
+(3).\\
+(3)
+\begin{eqnarray*}
+\not \exists j \in \{1, \dots, n\}: a \sqsubseteq x_j &\Leftrightarrow&
+\forall j \in \{1, \dots, n\}: a \not \sqsubseteq x_j \\
+&\Rightarrow& \forall j \in \{1, \dots, n\}: a \sqsubseteq
+\overline{x_j} \\
+&\Rightarrow& a \sqcap \bigsqcup_{i=1}^{n} x_i = \bigsqcup_{i=1}^{n}
+(a \sqcap x_i) = \bigsqcup_{i=1}^{n} \0 \\
+&\Rightarrow& a \not \sqsubseteq \bigsqcup_{i=1}^{n} x_i ~\text{ da }a
+  \in \at(V)
+\end{eqnarray*}
+\end{bw}
+
+\begin{ms}
+Ist \ba eine endliche Boolesche Algebra, so ist die Funktion
+\begin{equation*}
+f: V \rightarrow 2^{\at(V)}, \hspace{2cm} f(x) = \lbrace a \in \at(V) \vert a \sqsubseteq
+  x\rbrace
+\end{equation*}
+eine bijektive Funktion. Also gilt $\vert V \vert = 2^{\vert
+    \at(V) \vert}$.
+\end{ms}
+
+\begin{bw} ~\\
+\underline{Injektivit\"at:} Seien $x,y \in V$ mit $x \not= y$, z.z. ist $f(x) \not=
+f(y)$. Aus $x \not= y$ folgt ($x \not \sqsubseteq y$ oder $y \not
+\sqsubseteq x$). Es gelte o.B.d.A. $x \not \sqsubseteq y$. Dann gilt
+$x \sqcap \overline{y} \not= \0$. Also gibt es, da $\vert V \vert <
+\infty$, ein Atom $a \in \at(V)$ mit $a \sqsubseteq x \sqcap
+\overline{y}$.\\
+
+(1) $a \sqsubseteq x$ \hspace{3cm}
+(2) $a \sqsubseteq \overline{y}$\\
+
+Aus (1) und $a \in \at(V)$ folgt $a \in f(x)$. Aus (2) folgt $a \not
+\sqsubseteq y$. W\"are $a \subseteq y$, dann golte $a \sqsubseteq
+\overline{y}$ und $a \subseteq y$, also $a \sqsubseteq y \sqcap
+\overline{y} = \0$, daraus folgt wiederum $a = \0$, dies steht aber im
+Widerspruch zu $a \in \at(V)$. Also gilt $a \notin f(y)$.\\
+Da $a \in f(x)$ und $a \notin f(y)$ gilt $f(x) \not= f(y)$.
+\\
+\underline{Surjektivit\"at:} Sei $A \in 2^{\at(V)}$. Da $\vert V \vert
+< \infty$ gibt es $a_1, \cdots a_n \in \at(V)$ mit $A = \{a_1, \cdots,
+a_n$.\\
+Beh.: $f(\bigsqcup_{i=1}^{n} a_i) = \{a_1, \cdots, a_n\}$ f\"ur $n
+\geq 1$ und $f(\0) = \emptyset$ f\"ur $n=0$\\
+Bew.: $\subseteq$\\
+Sei $b \in f (\bigsqcup_{i=1}^{n} a_i)$, d.h. $b \in \at(V)$ unf $b
+\sqsubseteq \bigsqcup_{i=1}^{n} a_i$. Lemma 1.2.10 (3) zeigt, dass es
+$j \in \{1, \cdots, n\}$ mit $b \sqsubseteq a_j$ gibt. Wegen $b \in
+\at(V)$ gilt $b = a_j$, also $b \in A$.\\
+$\supseteq$\\
+Sei $b \in A$, d.h. $b = a_j$ f\"ur ein $j \in \{1, \dots, n\}$. Dann
+gilt $b \in \at(V)$ und $b \sqsubseteq \bigsqcup_{i=1}^{n} a_i$ (da $b
+\sqcup \bigsqcup_{i=1}^{n} a_i = a_j \sqcup \bigsqcup_{i=1}^{n} a_i =
+\bigsqcup_{i=1}^{n} a_i$). Die Definition von $f$ bringt letztendlich
+$b \in f(\bigsqcup_{i=1}^{n} a_i)$.
+\qed
+\end{bw}
+
+Weiterhin gelten f\"ur $f$ noch folgene Eigenschaften:
+\begin{enumerate}
+\item $f(x \sqcup y) = f(x) \cup f(y)$
+\item $f(x \sqcap y) = f(x) \cap (fy)$
+\item $f(\overline{x}) = \overline{f(x)} = \at(V) \setminus f(x)$
+\item $f(\0) = \emptyset$
+\item $f(\1) = \at(V)$
+\end{enumerate}
+
+\subsection{Boolesche Funktionen}
+\begin{mdef}
+Ist \ba eine Boolesche Algebra und $n \in V$ mit $n \geq 1$, dann ist
+$V_n$ die Menge der n-stelligen Funktionen $f: V^n \rightarrow V$.
+\qed
+\end{mdef}
+\begin{mdef}
+Zu $(\mathds{B}, \cdot, +, \bar~, \0, \1)$ und $n \geq 1$ hei\ss t $f
+\in \mathds{B}_n$ \underline{Boolesche Funktion} (Schaltfunktion).
+\qed
+\end{mdef}
+
+\begin{ms}
+Ist \ba eine Boolesche Algebra, so wird auch $(V_n,
+\widetilde{\sqcap}, \widetilde{\sqcup}, \widetilde{\bar~},
+\widetilde{\0}, \widetilde{\1})$ zu einer Booleschen Algebra, indem
+man definiert:\\
+$\widetilde{\0}: V^n \rightarrow V \hspace{1cm} \widetilde{\0}(x_1,
+\dots, x_n) = \0$\\
+$\widetilde{\1}: V^n \rightarrow V \hspace{1cm} \widetilde{\1}(x_1,
+\dots, x_n) = \1$\\
+und f\"ur alle $f:V^n \rightarrow V$ Funktionen $f \widetilde{\sqcap}
+g:V^n \rightarrow V$, $f \widetilde{\sqcup} g: V^n \rightarrow V$,
+$\widetilde{\bar f}: V^n \rightarrow V$ definiert durch:\\
+$(f \widetilde{\sqcap} g)(x_1, \dots, x_n) = f(x_1, \dots, x_n) \sqcap
+g(x_1, \dots, x_n)$\\
+$(f \widetilde{\sqcup} g)(x_1, \dots, x_n) = f(x_1, \dots, x_n) \sqcup
+g(x_1, \dots, x_n)$\\
+$\widetilde{\bar f}(x_1, \dots, x_n) = \overline{f(x_1, \dots, x_n)}$
+\end{ms}
+
+\begin{bw}
+Seien $f,g:V^n \rightarrow V$, dann:
+\begin{eqnarray*}
+&&f \sqcap g = g \sqcap f \\
+&\Leftrightarrow& \forall x_1, \dots, x_n \in V: (f \sqcap g)(x_1,
+\dots, x_n) = (g \sqcap f)(x_1, \dots, x_n)\\
+&\Leftrightarrow& \forall x_1, \dots, x_n) \in V: f (x_1, \dots, x_
+n) \sqcap g (x_1, \dots, x_n) = g (x_1, \dots, x_n) \sqcap f(x_1,
+\dots, x_n)\\
+&\Leftrightarrow& \forall x_1, \dots, x_n \in V:
+\underline{\text{wahr}}
+\end{eqnarray*}
+Rest analog.
+\qed
+\end{bw}
+Die M\"achtigkeit von $V_n$ sei kurz festzuhalten: $\vert V_n \vert =
+\vert V\vert^{(\vert V\vert^n)} = (2^a)^b = 2^{a\cdot 2^{a\cdot n}}$\\
+
+Des Weiteren schauen wir uns kurz Boolesche Funktionen auf
+$\mathds{B}$ an. Dabei ist $\0: \mathds{B}^n \rightarrow \mathds{B}$
+eine Kontraktion und $\1: \mathds{B}^n \rightarrow \mathds{B}$ eine
+Tautologie. Weiter gilt $+: \mathds{B} \times \mathds{B} \rightarrow
+\mathds{B}$ mit $+ \in \mathds{B}_2$, $\cdot: \mathds{B} \times \mathds{B} \rightarrow
+\mathds{B}$ mit $\cdot \in \mathds{B}_2$ und $\bar~: \mathds{B} \rightarrow
+\mathds{B}$ mit $\bar~ \in \mathds{B}$. Allgemein gilt $f:
+\mathds{B}^n \rightarrow \mathds{B}, f(x_1, \dots, x_n) = t$, wobei
+$t$ mittels $x_1, \dots, x_n, +, \cdot$ und $\bar~$ aufgebaut ist.
+
+\begin{mdef}
+Seien $n \geq 1$ und $x:=(x_1, \dots, x_n), a:= (a_1, \dots, a_n)$
+Vektoren aus $\mathds{B}^n$. Dann definiert man:
+\begin{enumerate}
+\item $x_i^{a_i} = x_i$, falls $a_i = 1$ (positives Literal)
+\item $x_i^{a_i} = \overline{x_i}$, falls $a_i = 0$ (negatives
+  Literal)
+\item $m_a(x) = \prod_{i=1}^{n} x_i^{a_i}$ ist Minterm $x$ bzgl. $a$
+\end{enumerate}
+\qed
+\end{mdef}
+
+\begin{ms}
+F\"ur alle $f \in \mathds{B}_n$ mit $n \geq 1$ und $f \not = \0$
+gilt:
+\begin{equation*}
+f(x_1, \dots, x_n) = \sum_{a \in f^{-1}(1)} m_a(x) \hspace{1cm}
+  \text{DNF}
+\end{equation*}
+Falls $f(x_1, \dots, x_n) = \sum_{a\in f^{-1}(1)} m_a(x) = \0$ definiert, dann ist $f \not = 0$ nicht wahr.
+\qed
+\end{ms}
+\begin{mex}
+$f: \mathds{B}^3 \rightarrow \mathds{B}, f(x,y,z)
+\mathrel{\widehat{=}}$ "$x+y+z$" gerade
+
+\begin{table}[h]
+\begin{tabular}{c|cccccccc}
+$x$ & 0 &0 &0 &0 &1 & 1 & 1 &1 \\
+$y$ &0 & 0 & 1 & 1 & 0 & 0 &1 & 1\\
+$z$ & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 1 \\
+\hline $f(x,y,z)$ & 1 & 0 & 0 & 1 & 0 & 1 & 1 & 0\\
+\end{tabular}
+\end{table}
+$f^{-1}(1) = \{ (0,0,0), (0,1,1), (1,0,1), (1,1,0)\}$\\
+$f(x,y,z) = \bar x \cdot \bar y \cdot \bar z + \bar x \cdot y \cdot z
++ x \cdot \bar y \cdot z + x \cdot y \cdot \bar z$
+\end{mex}
+
+Im Folgenden werden wir das Nicod-Nor und Sheffer-Nand verwenden.
+\begin{enumerate}
+\item $\triangledown \mathds{B} \times \mathds{B} \rightarrow
+  \mathds{B}$ mit $x \triangledown y = \overline{x + y}$
+\item $\triangle \mathds{B} \times \mathds{B} \rightarrow
+  \mathds{B}$ mit $x \triangle y = \overline{x \cdot y}$
+\end{enumerate}
+
+\begin{ms} ~ \\
+\begin{enumerate}
+\item Jede Boolesche Funktion $f: \mathds{B}^n \rightarrow \mathds{B}$
+  ist durch $\triangledown$ (bzw. durch $\triangle$) darstellbar.
+\item $\triangledown$ und $\triangle$ sind die einzigen Funktionen aus
+  $\mathds{B}_2$, mit denen man alle $f: \mathds{B}^n \rightarrow
+  \mathds{B}$ darstellen kann.
+\end{enumerate}
+\end{ms}
+
+\begin{bw} ~\\
+(1) Es gen\"ugt $+, \cdot, \bar~$ darzustellen, dann folgt die
+Behauptung aus Satz 1.3.5 (DNF).
+\begin{eqnarray}
+x+y &=& \overline{\overline{x + y}} = \overline{\bar x \cdot \bar y} =
+\bar x \triangle \bar y = (x \triangle x) \triangle (y \triangle y)\\
+x \cdot y &=& \overline{\overline{x \cdot y}} = \overline{\bar x +
+  \bar y} = \overline{x \triangle y} = (x \triangle y) \triangle (x
+\triangle y)\\
+\bar x &=& \overline{x \cdot x} = x \triangle x
+\end{eqnarray}
+Analog f\"ur $\triangledown$.\\
+(2) Sei $\otimes \mathds{B} \times \mathds{B} \rightarrow \mathds{B}$,
+so dass jede Funktion $f: \mathds{B}^n \rightarrow \mathds{B}$ nur
+durch $\otimes$ und Variablen darstellbar ist.\\
+$0 \otimes 0 = 0$ erlaubt nicht, $\bar ~$ darzustellen, da $\bar 0 =
+1$. \\
+$1 \otimes 1 = 1$ erlaubt nicht, $\bar ~$ darzustellen, da $\bar 1
+= 0$.\\
+Also muss $0 \otimes 0 = 1$ sowie $1 \otimes 1 = 0$ gelten.\\
+
+Die restlichen Auswertungen erfordern eine Fallunterscheidung:\\
+Fall 1: $0 \otimes 1 = 1$ und $1 \otimes 0 = 0$, dann w\"are $x \otimes
+y = \bar x$\\
+Fall 2: $0 \otimes 1 = 0$ und $1 \otimes 0 = 1$, dann w\"are $x \otimes
+y = \bar y$\\
+Somit k\"onnen Fall 1 und Fall 2 nicht auftreten.\\
+
+Fall 3: $0 \otimes 1 = 0$ und $1 \otimes 0 = 0$, dann w\"are $\otimes =
+\triangledown$\\
+Fall 4: $0 \otimes 1 = 1$ und $1 \otimes 0 = 1$, dann w\"are $\otimes
+= \triangle$\\
+
+Insgesamt sind also folgende Wertetafeln m\"oglich: \\
+\begin{tabular}{c|cccc}
+$x$ & 0 & 0 & 1 & 1 \\
+$y$ & 0 & 1 & 0 & 1 \\
+\hline $x \otimes y$ & 1 & 0 & 0 & 0
+\end{tabular}
+\begin{tabular}{c|cccc}
+$x$ & 0 & 0 & 1 & 1 \\
+$y$ & 0 & 1 & 0 & 1 \\
+\hline $x \otimes y$ & 1 & 1 & 1 & 0
+\end{tabular}
+\qed
+\end{bw}
+
+Sei $X = \{x_1, \dots, x_n\}$ Menge von Booleschen Variablen. 
+\begin{enumerate}
+\item[a)] Zu jedem $\phi \in \ax$ gibt es eine Boolesche Funktion
+  $f_{\phi}: \mathds{B}^n \rightarrow \mathds{B}$, so dass f\"ur alle
+  Belegungen $V: X \rightarrow \mathds{B}$ gilt:
+\begin{equation*}
+f(v(x_1), \dots, v(x_n)) = \underline{val}_v(\phi)
+\end{equation*}
+\item[b)] Zu jeder Booleschen Funktion $f: \mathds{B}^n \rightarrow
+  \mathds{B}$ gibt es $\phi_f \in \ax$, so dass f\"ur alle Belegungen
+  $V: X \rightarrow \mathds{B}$ gilt:
+\begin{equation*}
+f_{\phi}(v(x_1), \dots, v(x_n)) = \underline{val}_v(\phi_f)
+\end{equation*}
+\end{enumerate}
+
+\begin{mex}
+Sei $X = \{x, y, z\}$.\\
+$\phi \in \ax: \neg x \vee \neg (\neg y \vee z) \vee \neg x$\\
+Durch Aufstellen der Wertetafel ergibt sie wie folgt:
+\begin{tabular}{c|cccccccc}
+$a$ & 0 & 0 & 0 & 0 & 1& 1 & 1 &1 \\
+$b$ & 0 & 0 & 1 & 1 & 0 & 0 &1 &1 \\
+$c$ & 0 & 1 &0 & 1 & 0 & 1 & 0 & 1\\
+\hline $f_{\phi}(a,b,c)$ & 1 & 1 & 1 & 1 & 0 & 0  & 1 & 0 
+\end{tabular}
+Und daraus ergibt sich dann die Funtkion $f_{\phi}(a,b,c)= \bar a + (\overline{\bar b + c})+ \bar a = \bar a +
+b \cdot \bar c$.\\
+
+Sei $V: X \rightarrow \mathds{B}$ Belegung. Dann
+\begin{eqnarray*}
+\underline{val}_v(\phi) & = & \underline{val}_v(\neg x \vee \neg (\neg
+y \vee z) \vee \neg x) \\
+& = & \underline{val}_v(\neg x) + \val(\neg (\neg y \vee z)) +
+\val(\neg x) \\
+& = & \overline{v(x)} + \overline{\val(\neg y \vee z)} +
+\overline{v(z)} \\
+& = & \overline{v(x)} + \overline{\overline{v(y)} + v(z)} +
+\overline{v(x)} \\
+& = & f_{\phi}(v(x), v(y), v(z))
+\end{eqnarray*}
+\end{mex}
+
+\underline{Grundprobleme}
+\begin{enumerate}
+\item Erf\"ullbarkeit: Gegeben sei $\phi \in \ax$, gibt es $V: X
+  \rightarrow \mathds{B}$ mit $\val(\phi) = 1$\\
+\"Aquivalent dazu: Gilt $f_{\phi} \not = \0$
+\item Berechnung: Gegeben sei $\phi \in \ax$ und \bel. Bestimme
+  $\val(\phi)$.\\
+\"Aquivalent dazu: $f_{\phi}(v(x_1), \dots, v(x_n))$
+\item \"Aquivalenztest: Gegeben sei $\phi, \psi \in \ax$, gilt $\phi
+  \Leftrightarrow \psi$\\
+\"Aquivalent dazu: $f_{\phi} = f_{\psi}$
+\item Erf\"ullende Belegung: Gegeben sei $\phi \in \ax$, bestimme $\{v
+  \in \mathds{B}^X \vert \val{\phi} = 1\}$\\
+\"Aquivalent dazu: $f_{\phi}^{-1}(1)$
+\item Anzahl der erf\"ullenden Belegungen: Gegeben sei $\phi \in \ax$,
+  bestimme $\vert \{v \in \mathds{B}^X \vert \val(\phi) = 1\}
+  \vert$\\
+\"Aquivalent dazu: $\vert f_{\phi}^{-1}(1) \vert$
+\end{enumerate}
+
+\subsection{Einige spezielle Konstruktionen}
+Definiere wie folgt: $\mathds{B}_n$ Menge, $f: \mathds{B}^n \rightarrow \mathds{B}$\\
+$\0: \bol$, $\1: \bol$\\
+$\sqcap: \mathds{B}_n \times \mathds{B}_n \rightarrow \mathds{B}_n$,
+$\sqcup: \mathds{B}_n \times \mathds{B}_n \rightarrow \mathds{B}_n$,
+$\bar ~: \mathds{B}_n \rightarrow \mathds{B}_n$.\\
+Dann ist $(\mathds{B}_n, \sqcap, \sqcup, \bar ~, \0, \1)$ eine
+Boolesche Algebra.
+
+\begin{mdef}
+Es sei \bolf Boolesche Funktion. Eine Varibale $x_i$ hei\ss t
+\underline{wesentlich}\footnote{auch: Stelle $i$ in $f$ ist wesentlich.}, falls es $a_1, \dots, a_{n-1} \in \mathds{B}$
+gibt mit $f(a_1, \dots, a_{i-1}, 1, a_i, \dots, a_{n-1}) \not = f(a_1,
+\dots, a_{i-1}, 0, a_i, \dots, a_{n-1})$.
+\qed
+\end{mdef}
+
+Man kann mit Hilfe von zwei Schritten, feststellen, welche Variablen
+wesentlich sind:
+\begin{enumerate}
+\item Konstruktion einer Formel $\phi_f \in \ax$ zu $f$
+\item \"Aquivalenzumformungen, um Variablen zu entfernen
+\end{enumerate}
+Wesentliche Variablen werden dabei nicht entfernt, bleiben also
+stehen.
+
+\begin{mex}
+Sei $X = \{x ,y ,z \} $ und $f: \mathds{B}^3 \rightarrow \mathds{B},
+f(x,y,z) = x + y \cdot x + z \cdot x$\\
+Formel $\phi_f: x \vee (y \wedge x) \vee (z \wedge x)$
+\begin{eqnarray*}
+&&x \vee (y \wedge x) \vee (z \wedge x) \\
+&\text{logisch \"aquivalent zu:}& x \vee (z \wedge x) \hspace{1cm} \text{Absorption}\\
+&\text{logisch \"aquivalent zu:}& x \hspace{2,55cm} \text{Absorption}
+\end{eqnarray*}
+Also $f(a,b,c) = a$  f\"ur alle $a,b,c \in \mathds{B}$. Das hei\ss t
+$x$ ist wesentlich, $y$ und $z$ hingegen sind unwesentlich.
+\end{mex}
+
+\begin{mdef}
+Es sei \bolf eine Boolesche Funktion. Zu $i, 1 \leq i \leq n$ ist der
+\underline{positive Co-Faktor} definiert als
+\begin{equation*}
+f_{x_i}: \mathds{B}^n \rightarrow \mathds{B}^n, f_{x_i}(y_1, \dots,
+y_n)= f(y_1, \dots, y_{i-1}, 1, y_{i+1}, \dots, y_n)
+\end{equation*}
+und der \underline{negative Co-Faktor} definiert als
+\begin{equation*}
+f_{\overline{x_i}}: \mathds{B}^n \rightarrow \mathds{B}^n,
+f_{\overline{x_i}}(y_1, \dots, y_n) = f_{\overline{x_i}}(y_1, y_{i-1},
+0, y_{i+1}, \dots, y_n).
+\end{equation*}
+\qed
+\end{mdef}
+
+Im Folgenden wird die \underline{Shannon-Zerlegung} verwendet:
+\begin{equation*} f = x_i \cdot f_{x_i} + \overline{x_i} \cdot
+  f_{\overline{x_i}} \end{equation*}
+
+\begin{mdef}
+Die Projektionsfunktion $x_i: \bol$ ist f\"ur $i, 1 \leq i \leq n$
+definiert durch $x_i(y_1, \dots, y_n) = y_i$.
+\end{mdef}
+
+F\"ur die Operatoren der Booleschen Algebra bedeutet das wie folgt:\\
+\begin{enumerate}
+\item $x_i \cdot f_{x_i} \mathrel{\widehat{=}} x_i \sqcap f_{x_i}$ mit
+$\sqcap: \mathds{B}_n \times \mathds{B}_n \rightarrow \mathds{B}_n$
+\item $g + h \mathrel{\widehat{=}} g \sqcup h$ mit
+$\sqcup: \mathds{B}_n \times \mathds{B}_n \rightarrow \mathds{B}_n$
+\item $\bar ~ \mathrel{\widehat{=}} \bar ~: \mathds{B}_n
+  \rightarrow \mathds{B}_n$
+\end{enumerate}
+
+\begin{ms}
+F\"ur alle $f \in \mathds{B}_n$ und alle $i, 1 \leq i \leq n$ gilt
+\begin{equation*}
+f = x_i \cdot f_{x_i} + \overline{x_i} \cdot f_{\overline{x_i}}.
+\end{equation*}
+\end{ms}
+
+\begin{bw}
+Sei $(y_1, \dots, y_n) \in \mathds{B}^n$ beliebig.\\
+Zu zeigen: $f(y_1, \dots, y_n) = (x_i \cdot f_{x_i} + \overline{x_i}
+\cdot f_{\overline{x_i}})(y_1, \dots, y_n)$.
+\begin{eqnarray*}
+&&(x_i \cdot f_{x_i} + \overline{x_i} \cdot f_{\overline{x_i}})(y_1,
+\dots, y_n)\\
+&=& (x_i \cdot f_{x_i})(y_1, \dots,
+y_n)+(\overline{x_i} \cdot f_{\overline{x_i}})(y_1, \dots, y_n)\\
+&=& x_i(y_1, \dots, y_n) \cdot f_{x_i}(y_1, \dots, y_n) +
+\overline{x_i}(y_1, \dots, y_n) \cdot f_{\overline{x_i}}(y_1, \dots,
+y_n)\\
+&=& y_i \cdot f(y_1, \dots, y_{i-1}, 1, y_{i+1}, \dots, y_n) +
+x_i(y_1, \dots, y_n) \cdot f(y_1, \dots, y_{i-1}, 0, y_{i+1}, \dots,
+y_n) \\
+&=& y_i \cdot f(y_1, \dots, y_{i-1}, 1, y_{i+1}, \dots,y_n) +
+\overline{y_i} \cdot f(y_1, y_{i-1}, 0, y_{i+1}, \dots, y_n) 
+\end{eqnarray*}
+
+Fall 1: $y_i = 1$
+
+\begin{equation*}
+(x_i \cdot f_{x_i} + \overline{x_i} \cdot
+f_{\overline{x_i}})(y_1,\dots, y_n) = f(y_1,\dots, y_i, \dots, y_n) +
+0 = f(y_1, \dots, y_n)
+\end{equation*}
+
+Fall 2: $y_i = 0$
+\begin{equation*}
+(x_i \cdot f_{x_i} + \overline{x_i} \cdot
+f_{\overline{x_i}})(y_1,\dots, y_n) = 0+ f(y_1,\dots, y_i, \dots, y_n) = f(y_1, \dots, y_n)
+\end{equation*}
+\qed
+\end{bw}
+
+\begin{mdef}
+Es sei \bolf, zu $i$, $1 \leq i \leq n$ hei\ss t die Funktion 
+\begin{equation*}
+\exists x_i f: \mathds{B}^n \rightarrow \mathds{B}, \hspace{0.5cm}
+\exists x_i f= f_{x_i} + f_{\overline{x_i}}
+\end{equation*}
+die \underline{Existenzialquantifizierung} und 
+\begin{equation*}
+\forall x_i f: \mathds{B}^n \rightarrow \mathds{B}, \hspace{0.5cm}
+\forall x_i f= f_{x_i} \cdot f_{\overline{x_i}}
+\end{equation*}
+die \underline{Allquatifizierung} von $f$ nach $x_i$.
+\qed
+\end{mdef}
+
+\begin{ms}
+Es seien $f: \mathds{B}^n \rightarrow \mathds{B}^n$ und $i$, $1 \leq i
+\leq n$. Dann gilt f\"ur alle $(y_1,\dots,y_n) \in \mathds{B}$
+\begin{equation*}
+(\exists x_i f)(y_1,\dots,y_n) =1 \Leftrightarrow \exists a \in
+\mathds{B}: f(y_1,\dots,y_{i-1},a,y_{i+1},\dots, y_n) = 1
+\end{equation*}
+\begin{equation*}
+(\forall x_i f)(y_1,\dots,y_n) =1 \Leftrightarrow \forall a \in
+\mathds{B}: f(y_1,\dots,y_{i-1},a,y_{i+1},\dots, y_n) = 1
+\end{equation*}
+\end{ms}
+
+\begin{bw}
+F\"ur $\exists x_i f$:
+\begin{eqnarray*}
+(\exists x_i f)(y_1, \dots, y_n) &=& (f_{x_i} +
+f_{\overline{x_i}})(y_1, \dots, y_n)\\
+&=& f_{x_i}(y_1,\dots,y_n) + f_{\overline{x_i}}(y_1,\dots,y_n) \\
+&=& y_i \cdot f_{x_i}(y_1,\dots,y_{i-1},1,y_{i+1},\dots,y_n) +
+\overline{y_i} \cdot f_{\overline{x_i}}(y_1,\dots,
+y_{i-1},0,y_{i+1},\dots, y_n)\\
+(\exists x_i f)(y_1,\dots, y_n) = 1 &\Leftrightarrow& y_i \cdot
+f(y_1,\dots, 1, \dots, y_n) + \overline{y_i} \cdot
+f(y_1,\dots,0,\dots,y_n) =1 \\
+&& y_i = 1 \text{ oder } y_i = 0 \\
+&\Leftrightarrow& f(y_1,\dots,1,\dots,y_n) =1 \text{ oder }
+f(y_1,\dots, 0, \dots, y_n) = 1
+\end{eqnarray*}
+\qed
+\end{bw}
+
+\newpage
+
+\section{Bin\"are Entscheidungsdiagramme}
+Folgende Themen sollen behandelt werden:
+\begin{itemize}
+\item Grundlagen Graphentheorie 
+\item Grundlagen BDDs
+\item BDDs und Boolesche Funktionen
+\item BDDs f\"ur spezielle Funktionen
+\end{itemize}
+
+\subsection{Graphentheoretische Grundlagen}
+Es soll die \"ubliche Konvention gelte:
+$g=(V,P), V \not = \emptyset, \vert V \vert < \infty \text{ Knotenmenge },
+P \subseteq V \times V \text{ Pfeilmenge }, (x,y) \in P, x,y \in V$.
+
+\begin{mdef}
+Ein gerichteter (Multi-) Graph ist ein 4-Tupel $g=(V,P,\alpha,
+\omega)$ mit 
+\begin{enumerate}
+\item[(1)] $V$ endlich und $V \not = \emptyset, x \in V$ hei\ss t
+  \underline{Knoten}
+\item[(2)] $P$ endliche Menge, $p \in P$ hei\ss t \underline{Pfeil}
+\item[(3)] $\alpha, \omega: P \rightarrow V$ sind Funktionen, dabei
+  hei\ss en $\alpha(p)$ und $\omega(p)$ \underline{Anfangs- bzw. Endknoten} von $p
+  \in P$.
+\end{enumerate}
+Gilt f\"ur $x,y \in V$ und $p \in P$, dass $\alpha(p) = x$ und
+$\omega(p)=y$, so hei\ss t $x$ \underline{Vorg\"anger} von $y$ und $y$ \underline{Nachfolger}
+von $x$.\\
+\begin{enumerate}
+\item[(4)] $d^{+}g(x) = \vert \{ p \in P ~\vert~ \alpha(p)=x\}\vert$
+  hei\ss t Au\ss engrad von $x \in V$
+\item[(5)] $d^{-}g(x) = \vert \{ p \in P ~\vert~ \omega(p)=x\}\vert$
+  hei\ss t Innengrad von $x \in V$
+\end{enumerate}
+\qed
+\end{mdef}
+
+\begin{mdef}
+Sei $g=(V,P,\alpha, \omega)$ ein Graph.
+\begin{enumerate}
+\item[(1)] Eine Folge $(p_1,\dots,p_n) \in P^+$\footnote{nichtleere
+    Liste bzw $n \geq 1$} hei\ss t \underline{Weg} von $\alpha{p_1}$
+  nach $\omega(p_n)$, falls f\"ur alle $i, 1 \leq i \leq n$ gilt:
+  $\omega(p_i) = \alpha(p_{i+1})$. Sind alle paarweise verschieden, so
+  hei\ss t der Weg \underline{einfach}.
+\item[(2)] Ein Weg $(p_1, \dots, p_n)$ hei\ss t \underline{Kreis}, falls
+  $\omega(p_n) = \alpha(p_1)$. Ein Kreis hei\ss t \underline{einfach},
+  falls alle Pfeile paarweise verschieden sind.
+\item[(3)] Knotenlisten von Wegen nach Pfeilen\footnote{Pfeile sind
+    eindeutig} $(p_1, \dots, p_n)$ lassen sich wie folgt darstellen:
+  $(\alpha(p_1),\dots, \alpha(p_n), \omega(p_n)$.
+\item[(4)] Seien $x, y \in V$. Dann hei\ss t $y$ "\underline{von $x$
+    aus erreichbar}", falls $x=y$ oder ein Weg $(p_1, \dots, p_n) \in
+  P^+$ mit $\alpha(p_1) = x$ und $\omega(p_n) = y$ existiert.
+\item[(5)] $g$ hei\ss t \underline{kreisfrei}, falls es keinen Kreis
+  gibt.
+\end{enumerate}
+\qed 
+\end{mdef}
+
+\begin{mex}
+BILD\\
+Die Wegl\"ange entspricht der Anzahl der Pfeile.
+\end{mex}
+
+\begin{mdef}
+Seien $g = (V,P,\alpha, \omega)$ Graph und $x \in V$. Dann hei\ss t
+$x$
+\begin{enumerate}
+\item[(1)] \underline{Quelle}, falls $d^-g(x)=0$ ($\omega(p) \not = x$
+  f\"ur alle $p \ in P$)
+\item[(2)] \underline{Senke}, falls $d^+g(x)=0$ ($\alpha(p) \not x$
+  f\"ur alle $p \in P$)
+\item[(3)] \underline{Wurzel}, falls jeder Knoten $y \in V$ von $x$
+  aus erreichbar ist.
+\end{enumerate}
+\qed
+\end{mdef}
+
+\begin{mdef}
+Sei $g = (V,P, \alpha, \omega)$ Graph. Dann hei\ss t g
+\begin{enumerate}
+\item[(1)] \underline{Knotenmarkiert}, falls es eine Funktion $m: V
+  \rightarrow M$ gibt ($m(x)$ hei\ss t \underline{Marke} von $x \in
+  V$).
+\item[(2)] \underline{Pfeilmarkiert}, falls es eine Funktion $m: P
+  \rightarrow M$ gibt ($m(x)$ hei\ss t \underline{Marke} von $p \in P$).
+\end{enumerate}
+\qed
+\end{mdef}
+
+\subsection{Grundlagen BDDs}
+
+\begin{mex} \label{mex221}
+Hier k\"onnte Ihre Werbung stehen!
+\end{mex}
+
+
+\begin{mdef}
+Es sei $X = \{x_1, \dots. x_n\}$ eine Menge von Variablen. Ein
+\underline{BDD} zu $X$ ist ein gerichteter Graph $g =
+(V,P,\alpha,\omega)$ mit den folgenden Eigenschaften
+\begin{enumerate}
+\item[(1)] Der Graph g ist kreistfrei, hat genau eine Wurzel und genau
+  zwei Senken, genannt $\mathds{I}$ und $\mathds{O}$.
+\item[(2)] Jeder Knoten ungleich $\mathds{I}$ und $\mathds{O}$ hei\ss
+  t \underline{innerer Knoten} und tr\"agt eine Variable aus $X$ als
+  Marke. $\mathds{I}$ hei\ss t 1-Senke und tr\"agt die 1 als Marke und
+  $\mathds{O}$ hei\ss t 0-Senke und tr\"agt die 0 als Marke. Falls $V'
+  = V \cup \{\mathds{I}, \mathds{O}\}$, dann $V$ innere Marken.
+\item[(3)] Jeder Knoten ungleich 
+$\mathds{I}$ und $\mathds{O}$ hat
+  genau zwei ausgehende Pfeile. Ein Pfeil ist mit 1 markiert und
+  hei\ss t 1-Pfeil, der andere ist mit 0 markiert und hei\ss t
+  0-Pfeil. \underline{1- und 0-Nachfolger} von $x \in V$ sind entsprechend definiert.
+\item[(4)] F\"ur alle Wege von der Wurzel zu einem Knoten sind die
+  Knotenmarkierungen der Knoten der Knotenlisten paarweise
+  verschieden.
+\end{enumerate}
+\qed
+\end{mdef}
+
+\begin{mbez}
+\begin{enumerate}
+\item[(1)] $\mathds{I}$ 1-Senke, $\mathds{O}$ 0-Senke.
+\item[(2)] F\"ur $x \in V$ ist $\underline{var}(x) \in X$
+  \underline{Markierung} ($\underline{var}(\mathds{I})=1$ und
+  $\underline{var}(\mathds{O})=0$).
+\item[(3)] $\underline{size}(g)=\vert V \vert$ ist die Anzahl der
+  \underline{inneren Knoten}, $\underline{height}(g)$ bezeichnet die
+  L\"ange eines l\"angsten Weges von Wurzel zu einer
+  Senke\footnote{H\"ohe von $g$}, $\underline{width}(g)= \max_{i \in
+    \{1,\dots,n\}} \vert V_i \vert$ mit $V_i = \{ a \in V \vert
+  \underline{var}(a)=x_i\}$.
+\item[(4)]  Zu $a \in V$ hei\ss t ist 1-Nachfolger.
+  $\underline{then}(a)$ und 0-Nachfolger $\underline{else}(a)$
+\end{enumerate}
+\qed
+\end{mbez}
+
+\begin{mdef}
+Sei $(X,>)$ Variablenordnung, wobei $>$ lineare Striktordnung auf
+$X$. Ein BDD $g$ hei\ss t geordnet oder OBDD, falls f\"ur alle Wege $(p_1,\dots,p_n)$ 
+von der Wurzel bis zur einer Senke gilt:
+\begin{equation*}
+\underline{var}(p_i) < \underline{var}(p_{i+1}) \text{ f\"ur } i, 1
+\leq i \leq n-1
+\end{equation*}
+\qed
+\end{mdef}
+
+\begin{ex}
+Regelbsp. Entfernen eines redundanten Knotens
+\end{ex}
+
+\begin{mr}\label{regel:entf}
+Es sei $g=(V,P,\alpha,\omega)$ ein OBDD. Ein innerer Knoten $a \in V$
+hei\ss t redundant, falls $\underline{then}(a) = \underline{else}(a)$.
+Das Entfernen eines redundanten Knotens $a$ funktioniert wie folgt:
+\begin{itemize}
+\item[(1)] $a$ wird aus V entfernt.
+\item[(2)] Jeder Pfeil $p \in P$ mit $\alpha(p) = a$ oder $\omega(p) =
+  a$ wird aus $P$ entfernt.
+\item[(3)] F\"ur jeden Vorg\"angerknoten von $a$, f\"uge einen
+  \begin{itemize}
+  \item[(i)] 1-Pfeil nach $\underline{then}(a)$, falls es ein 1-Pfeil
+    war.
+  \item[(ii)] 0-Pfeil nach $\underline{else}(a)$, sonst.
+  \end{itemize}
+\end{itemize}
+\qed
+\end{mr}
+
+\begin{mdef}
+Sei $g=(V,P,\alpha,\omega)$ ein OBDD und $a \in V$ innerer Knoten. Das
+durch $a$ induzierte Unter-OBDD $g'=(V',P',\alpha\,\omega')$ ist wie
+folgt definiert:
+\begin{itemize}
+\item[(1)] $V' = \{b \in V ~\vert~ b \text{ von } a \text{ aus erreichbar
+  }\}$
+\item[(2)] $P' = \{p \in P ~\vert~ \alpha(p) \in V' \wedge \omega(p) \in
+  V'\} $
+\item[(3)] $\alpha' : V' \rightarrow P'$ ist definiert durch $\alpha'(p) =
+  \alpha(p)$ f\"ur alle $p \in P$.\\
+  $\omega' : V' \rightarrow P'$ ist definiert durch $\omega'(p) =
+  \omega(p)$ f\"ur alle $p \in P$.
+\item[(4)] Jedes $a \in V'$ hat die gleiche Marke wie in g.
+\item[(5)] Jeder $p \in P$ hat den selben Typ (0- oder 1-Pfeil) wie in g.
+\end{itemize}
+\qed
+\end{mdef}
+
+\begin{mdef}
+Seien $g=(V,P,\alpha,\omega)$ und $g'=(V',P',\alpha',\omega')$
+OBDDs. Dann hei\ss en $g$ ung $g'$
+\underline{strukturgleich}\footnote{auch: isomorph}, fall es bijektive
+Funktionen 
+\begin{equation*}
+\Phi: V \rightarrow V' \hspace{1cm} \Psi: P \rightarrow P'
+\end{equation*}
+gibt, so dass f\"ur alle $p \in P$ gilt
+\begin{itemize}
+\item[(1)] $\alpha'(\Psi(p)) = \Phi(\alpha(p))$
+\item[(2)] $\omega'(\Psi(p)) = \Phi(\omega(p))$
+\item[(3)] $p$ ist 1-Pfeil $\rightarrow \Psi(p)$ ist 1-Pfeil
+\item[(4)] $p$ ist 0-Pfeil $\rightarrow \Psi(p)$ ist 0-Pfeil
+\end{itemize}
+und f\"ur alle $a \in V$ gilt
+\begin{itemize}
+\item[(5)] $\underline{var}(\Phi(a)) = \underline{var}(a)$
+\end{itemize}
+\qed
+\end{mdef}
+
+\begin{mex}
+Hier sollte ein Bild sein.
+\end{mex}
+
+\begin{mr}\label{regel:verschm}
+Sei $g=(V,P,\alpha,\omega)$ OBDD. Innere Knoten $a,b \in V$ hei\ss en
+\underline{\"aquivalent}, falls gilt:
+\begin{eqnarray*}
+\underline{then}(a) & = & \underline{then}(b)\\
+\underline{else}(a) & = & \underline{else}(b)\\
+\underline{var}(a) & = & \underline{var}(b)
+\end{eqnarray*}
+Das Verschmelzen von $a$ und $b$\footnote{durch Entfernen von $b$}
+funktioniert wie folgt:
+\begin{itemize}
+\item[(1)] $b$ wird aus $V$ entfernt.
+\item[(2)] Jeder Pfeil $p \in P$ mit $\alpha(p) = b$ bzw. $\omega(p)=b$
+  wird aus $P$ entfernt.
+\item[(3)] F\"ur alle Vorg\"anger $c$ von $b$ f\"uge
+  \begin{itemize}
+  \item[(i)] 1-Pfeil von $c$ nach $a$ ein gdw. 1-Pfeil von $c$ nach
+    $b$ existierte,
+  \item[(ii)] 0-Pfeil von $c$ nach $a$ ein, sonst.
+  \end{itemize}
+\end{itemize}
+\qed
+\end{mr}
+
+\begin{mdef}
+Sei $g$ ein OBDD \"uber Variablenmenge $X$. Dann hei\ss t $g$
+\begin{itemize}
+\item[(1)] \underline{vollst\"andig}, falls f\"ur jeden Weg
+  $(p_1,\dots,p_n)$ von der Wurzel zu einer Senke ($\mathds{I}$ oder
+  $\mathds{O}$) gilt: $n = \vert X \vert$.
+\item[(2)] \underline{quasi-reduziert} (kurz: QOBDD), falls er
+  vollst\"andig ist und es keine \"aquivalenten Knoten gibt.
+\item[(3)] \underline{reduziert} (kurz: ROBDD), falls es keine
+  redundanten und \"aquivalenten Knoten besitzt.
+\end{itemize}
+Ist $\Pi = (x_1, \dots, x_n)$ die Variablenordnung, so nennt man
+$V_i=\{a \in V ~\vert~ \underline{var}(a)=x_i\}$ die $i$-te
+\underline{Schicht}, wobei $1 \leq i \leq n$ und $\{\mathds{I},
+\mathds{O}\}$ hei\ss t die $n+1$-te Schicht.
+\qed
+\end{mdef}
+
+\begin{mex}
+Ein weiteres Beispiel
+\end{mex}
+
+\subsection{Darstellung von Booleschen Funktionen durch BDDs}
+\begin{mdef}
+Sei $g=(V,P,\alpha,\omega)$ OBDD.
+\begin{equation*}
+f_{\mathds{I}}: \mathds{B}^n \rightarrow \mathds{B}, \hspace{1cm}
+f_{\mathds{I}}(x_1,\dots, x_n)=1
+\end{equation*}
+\begin{equation*}
+f_{\mathds{O}}: \mathds{B}^n \rightarrow \mathds{B}, \hspace{1cm}
+f_{\mathds{O}}(x_1,\dots, x_n)=0
+\end{equation*}
+und f\"ur jeden inneren Knoten $a \in V$ ist
+\begin{equation*}
+f_a : \mathds{B}^n \rightarrow \mathds{B}, \hspace{1cm}
+f_a(x_1,\dots,x_n) = x \cdot f_{then(a)}(x_1,\dots,x_n) + \overline{x}
+\cdot f_{else(a)}(x_1,\dots,x_n)
+\end{equation*}
+mit $x:=\underline{var}(a)$ definiert. Ist $w$ Wurzel von $g$, so ist
+$f_w$ die von $g$ dargestellte Funktion.
+\qed
+\end{mdef}
+
+\begin{mex}
+Sei $X=\{x,y,z,u\}$ und $\Pi=(x,y,z,u)$. \\
+Hier fehlt ein Bild.\\
+\begin{eqnarray*}
+f_a(x,y,z,u) &=& x \cdot f_c(x,y,z,u) + \overline{x} \cdot
+f_b(x,y,z,u) \\
+&= & x \cdot (z \cdot f_d(x,y,z,u) + \overline{z} \cdot f_{\mathds{O}}(x,y,z,u))
++ \overline{x} \cdot (y \cdot f_c(x,y,z,u) + \overline{y} \cdot
+f_{\mathds{O}}(x,y,z,u))\\
+&=& x \cdot (z \cdot (u \cdot f_{\mathds{I}}(x,y,z,u) + \overline{u} \cdot
+f_{\mathds{O}}(x,y,z,u)) + \overline{z} \cdot 0) + \\ && \overline{x} \cdot
+(y \cdot (z \cdot (u \cdot f_{\mathds{I}}(x,y,z,u) + \overline{u}
+\cdot f_{\mathds{O}}(x,y,z,u)) + \overline{z} \cdot 0)) \\
+&=& x \cdot (z \cdot (u \cdot 1 + \overline{u} \cdot 0)) +
+\overline{x} \cdot (y \cdot (z \cdot (u \cdot 1 + \overline{u} \cdot
+0)))\\
+&=& x \cdot z \cdot u + \overline{x} \cdot y \cdot z \cdot u 
+\end{eqnarray*}
+\end{mex}
+
+\begin{ms}
+Sei $g$ ein OBDD. Zu einem Weg $(p_1,\dots,p_n)$ von der Wurzel $w$
+bis zur $\mathds{I}$ (1-Senke) sei definiert:
+\begin{equation*}
+m(p_1,\dots,p_k) = \sum_{i=1}^{k}
+\underline{var}(\alpha(p_i))^{a_i}
+\end{equation*}
+wobei $x_i^{a_i}$ wie in Def. 1.3.4 und $a_i=1$ gdw. $p_i$ 1-Pfeil bzw. $a_i=0$ gdw. $p_i$
+0-Pfeil ist, dann gilt 
+\begin{equation*} f_w(x_1,\dots,x_n) = \sum_{w \in \mathcal{W}}
+m(w)
+\end{equation*}
+wobei $\mathcal{W}$ die Menge der Wege von $w$ nach
+$\mathds{I}$ ist.
+\end{ms}
+
+\begin{bw}
+Induktion \"uber die H\"ohe des OBDDs\\
+\underline{IA:} H\"ohe sei 1.\\
+Hier fehlen wieder Bilder.\\
+1. Fall: \\
+\begin{eqnarray*}
+f_w(x_1,\dots,x_n)= x \cdot f_{mathds{I}}(x_1,\dots,x_n) +
+\overline{x} \cdot f_{\mathds{O}}(x_1,\dots,x_n) = x
+\end{eqnarray*}
+Dann gilt $\mathcal{W}=\{(p)\}$, $m((p)) = x$ und schlie\ss lich
+$\sum_{w \in \mathcal{W}} m(w) = m((p))=x = f_w(x_1,\dots,x_n)$.
+
+Analog f\"ur Fall 2 bis 4.
+\underline{IS:} Sei H\"ohe $> 1$ und $g$ habe folgende Form (Bild).\\
+\begin{eqnarray*}
+f_a(x_1,\dots,x_n) &=& x \cdot f_b(x_1,\dots,x_n) + \overline{x} \cdot
+f_c(x_1,\dots,x_n) \\
+&=& x \cdot \sum_{w \in \mathcal{W}_1} m(w) + \overline{x} \cdot
+\sum_{v \in \mathcal{W}_2} m(v) \\
+&=& \sum_{w \in \mathcal{W}_1} x \cdot m(w) + \sum_{v \in
+  \mathcal{W}_2} \overline{x} \cdot m(v) \\
+&=& \sum_{w \in \mathcal{W}, w_1 = p} m(w) + \sum_{v \in
+  \mathcal{W}, v_1 = q} m(v)\\
+&=& \sum_{w \in \mathcal{W}} m(w)
+\end{eqnarray*}
+\qed
+\end{bw}
+
+\begin{mk}
+Bei ROBDDs werden auch die 1- und 0-Senke als OBDDs aufgefasst, mit
+$\mathds{I}$ bzw. $\mathds{O}$ bezeichnet und es wird $f_{\mathds{I}}$
+und $f_{\mathds{O}}$ wie in Def. 2.3.1 definiert.
+\qed
+\end{mk}
+
+\begin{ms}
+Zu jeder Booleschen Funktion existiert ein OBDD, welcher die Funktion
+darstellt. Dies gilt auch, wenn man QOBDDs bzw. ROBDDs betrachtet.
+\qed
+\end{ms}
+
+\begin{ms}
+Es sei $f$ eine Boolesche Funktion. Wird $f$ durch zwei ROBDDs (oder
+QOBDDs) $g_1$ und $g_2$ dargestellt, so sind $g_1$ und $g_2$ strukturgleich.
+\qed
+\end{ms}
+
+Es ist festzuhalten, dass die Variablenordnung Einfluss auf die
+Gr\"o\ss e hat.
+
+\begin{mex}
+BILD
+\end{mex}
+
+\subsection{OBDDs f\"ur wichtige Funktionen}
+Gaaaanz viele Bilder.
+
+\newpage
+
+\section{Algorithmen}
+\begin{itemize}
+\item Minimierung
+\item Konstruktion (Zusammenbau, Synthese)
+\item Operation f\"ur
+Basisfragen von logischen Formeln
+\end{itemize}
+
+\subsection{Minimierung}
+Gegeben: OBDD\\
+Aufgabe: Konstruiere einen ROBDD durch Anwenden der Regeln
+\hyperref[regel:entf]{\glqq Entfernen redundanter Knoten\grqq} und
+\hyperref[regel:verschm]{\glqq Verschmelzen \"aquivalenter Knoten\grqq} soweit wie
+  m\"oglich.
+
+\begin{obdd}
+Sei $g$ ein OBDD. Jeder Knoten $a$ wird als \emph{Record} mit $4$
+Komponenten dargestellt.
+\begin{itemize}
+\item[(1)] a.id - Knotenbezeichnung, nat\"urliche Zahl (alle
+  verschieden)
+\item[(2)] a.var - Beschriftung, d.h. Variable\footnote{Index der
+    Variable bei Implementierung}
+\item[(3)] a.then - Verweis auf $then(a)$, falls $a$ innerer Knoten,
+  sonst $nil$
+\item[(4)] a.else - Verweis auf $else(a)$, falls $a$ innerer Knoten,
+  sonst $nil$
+\end{itemize}
+Zus\"atzlich: Mengen $S_1,\dots,S_n$ mit $S_i=\{ a \vert
+\underline{var}(a)=x_i\}$. Im konkreten $S_i$ gibt es eine Liste von
+Verweise auf Records mit $a.var = x_i$ (bzw. $a.var = i$).
+\end{obdd}
+
+\begin{mex}
+BIldchen
+\end{mex}
+
+\begin{algred}
+  Eingabe: OBDD $g$ zu einer Variablenordnung (in
+  Zeigergeflechtdarstellung)\\
+  Ausgabe: ROBDD - Geflechtdarstellung zu $g$ \\
+
+  \texttt{Reduce}(g):
+  \begin{itemize}
+  \item[(1)] Durchlaufe g in DFS-Ordnung und setze dabei\\
+      \lstinline{0-Senke.id := 0}\\
+      \lstinline{1-Senke.id := 1}\\
+      \lstinline{z[0] = 0-Senke}\\
+      \lstinline{z[1] = 1-Senke}
+ \item[(2)] \lstinline{k := 2}\\
+      \lstinline{for i=n-1 until 1 do}
+      \begin{itemize}  
+      \item[(1)] Suche in $S_i$ alle redundanten Knoten und markiere sie als
+entfernbar.
+      \item[(2)] Sortiere die Mengen $S_i$ nach der folgenden Ordnung:\\
+      $a \sqsubseteq b \Leftrightarrow$ (\lstinline{a.then.id, a.else.id})
+           $\leq_{lex.}$ (\lstinline{b.then.id, b.else.id})\\
+      Damit stehen \"aquivalente Knoten in der Liste immer
+      hintereinander.
+      \item[(3)] Suche die verschmelzbaren Knoten und markiere alle
+        bis auf einen als entfernbar. F\"ur jede Teilliste
+        $a_1,\dots,a_n$ von \"aquivalenten Knoten wird $a_1$
+        Vertreterknoten und $a_2,\dots,a_n$ werden als entfernbar
+        markiert.\\
+        \lstinline{k := k+1}\\
+        \lstinline{a1.id = k}\\
+        \lstinline{z[k] = }$a_1$
+        \item[(4)] Alle in (1) und (3) als entferbar markierten Knoten
+          werden entfernt und auf sie verweisende Zeiger mithilfe von
+          $z$ entsprechend umgelenkt.
+    \end{itemize}
+  \end{itemize}  
+\end{algred}
+
+\subsection{Auswertung und Erf\"ullbarkeit}
+Auswertung:\\
+Gegeben sei ein OBDD zur Funktion \bolf ~und $b_1,\dots\,b_n \in
+\mathds{B}^n$. Bestimme $f(b_1,\dots,b_n)$.\\
+
+Erf\"ullbarkeit:\\
+Gegeben sei ein OBDD zur Funktion \bolf. Gibt es $(b_1,\dots,b_n) \in
+\mathds{B}^n$ mit $f(b_1,\dots,b_n)=1$?
+
+\begin{algval}
+  Eingabe: OBDD $g$ zu $f$ und $(b_1,\dots,b_n) \in \mathds{B}^n$.\\
+
+  \texttt{Value(g,b)}
+  \begin{minipage}{0.5\textwidth}
+  \begin{empheq}[box=\fbox]{align*}
+    &a := g\\
+    &\text{while a keine Senke do }\\
+    &\text{\hspace{0.9cm} if } b[a.var] = 0 \text{ then } a := a.else\\
+    &\text{\hspace{0.9cm} else } a := a.then\\
+    &\text{return } a.var
+  \end{empheq}
+\end{minipage}
+\end{algval}
+
+\begin{mex}
+  $X = \{x_1,x_2,x_3,x_4\}, ~\pi = (x_1,x_2,x_3,x_4), ~ b= (0,1,0,1)$\\
+  $f(x)= x_1 \cdot x_2 \cdot x_3 \cdot x_4 + x_1 \cdot x_2 \cdot
+  \overline{x_3} \cdot x_4 + x_1 \cdot \overline{x_2} \cdot x_3 \cdot
+  x_4 + \overline{x_1} \cdot x_2 \cdot \overline{x_3} \cdot x_4 +
+  \overline{x_1} \cdot x_2 \cdot x_3 \cdot x_4 + \overline{x_1} \cdot
+  \overline{x_2} \cdot x_3 \cdot x_4$
+\end{mex}
+
+\begin{algsat}
+Eingabe: OBDD $g$ und globales Feld $B$\\
+Ausgabe: $1$ und Belegung von $B$, die den Wert $1$ liefert, sonst
+$0$\\
+
+\texttt{Satisfy(g,B)}\footnote{Komplexit\"at:
+  $O(\underline{size}(g))$}
+\begin{minipage}{0.5\textwidth}
+\begin{empheq}[box=\fbox]{align*}
+ &a := g\\
+ &\text{if } a \text{ Senke then return } a.var\\
+ &\text{else } B[a.var] = 1\\
+ &\text{if } Satisfy(a.then, B) \text{ then return } 1\\
+ &B[a.var] := 0\\
+ &\text{if } Satisfy(a.else, B) \text{ then return } 1
+\end{empheq}
+\end{minipage}
+\end{algsat}
+
+\begin{mex}
+  Sei $X = \{x_1,x_2,x_3\}$ und $\pi = (x_1,x_2,x_3)$, sowie $f(x) =
+  x_1 \cdot \overline{x_2} \cdot x_3 = \overline{x_1} \cdot
+  \overline{x_2} \cdot x_3$
+\end{mex}
+
+\begin{ms}
+  Sei \bolf ~Boolesche Funktion, die durch ein QOBDD dargestellt
+  wird. Dann ist die Anzahl der erf\"ullenden Belegungen gegeben durch
+  $\underline{anz}(a)$, wobei anz rekursiv wie folgt definiert
+  ist\footnote{F\"ur ROBDDs gilt dies jedoch nicht.}:
+  \begin{align*}
+    \underline{anz}(\mathds{O}) = & ~0\\
+    \underline{anz}(\mathds{I}) = & ~1\\
+    \underline{anz}(a) = & ~\underline{anz}(a.then) +
+    \underline{anz}(a.else), \text{ wobei } a \text{ keine Senke }
+  \end{align*}
+\qed
+\end{ms}
+
+\begin{mex}
+QOBDD zur Funktion von \hyperref[mex221]{Beispiel \ref{mex221}}\\
+$X = \{x_1,x_2,x_3\}, ~\pi = (x_1,x_2,x_3)$
+\end{mex}
+
+Sei $g$ ein ROBDD \"uber $X = \{x_1, \dots, x_n\}$. F\"ur Knoten $a$
+von $g$ wird $\underline{level}(a)$ definiert als 
+\begin{itemize}
+\item Index von $\underline{var}(a)$, falls $a$ innerer Knoten
+\item $n+1$, falls $a$ Senke
+\end{itemize}
+
+\begin{ms}
+  Sei $g$ ein ROBDD, welches Funktion \bolf ~darstellt. Dann ist die
+  Anzhal der erf\"ullenden Belegungen von $f$ gegeben durch
+  $\underline{anz}(g)$\footnote{wenn g Wurzel ist}, wobei die Funktion
+  anz auf ROBDD Knoten definiert ist durch:
+  \begin{align*}
+    \underline{anz}(\mathds{I})=& ~1\\
+    \underline{anz}(\mathds{O})=& ~0\\
+    \underline{anz}(a) =& ~\frac{1}{2} \cdot
+  \underline{anz}(\underline{then}(a)) \cdot
+  2^{~\underline{level}(\underline{then}(a) - \underline{level}(a))} +
+  \underline{anz}(\underline{else}(a)) \cdot
+  2^{~\underline{level}(\underline{else}(a) - \underline{level}(a))}
+  \end{align*}
+\qed
+\end{ms}
+
+\begin{mex}
+Boolesche Addition.\\
+
+ROBDD zur Funktion von \hyperref[mex221]{Beispiel \ref{mex221}}.
+\end{mex}
+
+\subsection{\"Aquivalenztest}
+Problem: $f_1, f_2 : \mathds{B}^n \rightarrow \mathds{B}$. Gilt $f_1 =
+f_2$? (D.h. $f_1(a_1,\dots,a_n) = f_2(a_1,\dots,a_n)$
+f.a. $(a_1,\dots,a_n) \in \mathds{B}^n$)\\
+L\"osung: Formuliere $f_1$ und $f_2$ \"uber gleichen Variablen $X =
+\{x_1,\dots, x_n\}$. Lege (m\"oglichst g\"unstige) Variablenordnung
+fest und stelle $f_1$ und $f_2$ durch BDDs\footnote{am besten sogar
+  als ROBDDs} $g_1, g_2$ dar.\\
+Dann gilt: $f_1 = f_2 \Leftrightarrow g_1 \text{ und } g_2 \text{
+  strukturgleiche BDDs}$.
+
+\begin{algequ}
+\texttt{Equiv}(a,b)
+\begin{minipage}{0.9\textwidth}
+\begin{empheq}[box=\fbox]{align*}
+&\text{if a 1-Senke then return \glqq b 1-Senke\grqq}\\
+&\text{else if a 0-Senke then return \glqq b 0-Senke\grqq}\\
+&\text{else if b Senke then return false}\\
+&\text{else if }var(a) = var(b) \text{ then return } \texttt{Equiv}(\underline{then}(a),
+ \underline{then}(b)) \wedge \texttt{Equiv}(\underline{else}(a),
+ \underline{else}(b))\\
+&\text{else return false}
+\end{empheq}
+\end{minipage}
+\end{algequ}
+
+\textbf{Notwendig zur Effizienzsteigerung: Computed
+    Table}\\
+Computed Table CT mit Eintr\"agen $((a,b,),r)$ als Paare, wobei $a, b$
+BDD-Knoten sind und $r$ ein Wahrheitswert ist. Dabei gilt:
+\begin{align*}
+  ((a,b) ,r) \text{ in CT } \Rightarrow \texttt{Equiv}(a,b) = r
+\end{align*}
+Die Tabellenoperationen umfassen dabei folgende Funktionalit\"aten:
+\begin{itemize}
+\item Einf\"ugen eines Paares
+\item Testen, ob zu $(a,b)$ ein Eintrag existiert
+\item Auslesen des Wahrheitwertes $r$ zum Eintrag $((a,b), r)$
+\end{itemize}
+Die Implementierung von CTs erfolgt zumeist durch
+\href{http://de.wikipedia.org/wiki/AVL-Baum}{AVL-B\"aume}, wodurch
+logarithmische Zugriffszeiten m\"oglich sind.
+
+\subsection{Negation}
+Gegeben sei eine Funktion \bolf und die Negation $\bar f :
+\mathds{B}^n \rightarrow \mathds{B}, \bar
+f(x_1,\dots,x_n)=\overline{f(x_1,\dots,x_n)}$.\\
+Problem: Ist $g$ OBDD zur Darstellung von $f$, wie bekommt man OBDD
+zur Darstellung von $\bar f$?\\
+Bei ROBDDS und QOBDDs wird mit $bar g$ das BDD bezeichnet, welches
+$\bar f$ darstellt. Man erh\"alt also die ROBDD- bzw. QOBDD-Negation
+durch die Berechnung von $\bar g$ aus $g$.
+
+\begin{ms}
+Sei $g$ das ROBDD (QOBDD), welches \bolf ~darstellt. Ist $\bar g$ das
+BDD, welches aus $g$ dadurch entsteht, dass man $\mathds{O}$ und
+$\mathds{I}$ vertauscht, so stellt $\bar g$ die Funktion $\bar f$ dar.
+\qed
+\end{ms}
+
+\begin{mdef}
+Es seien $g_1, g_2$ OBDDs mit fester Variablenordnung und $x \in X$,
+so dass $\underline{var}(a) <x$ f\"ur alle Kntoen $a$ von $g_1$ und
+$g_2$ gilt. Dann ist OBDD $\underline{cons}(x,g_1,g_2)$ festgelegt
+durch:
+\begin{align*}
+\underline{var}(\underline{cons}(x,g_1,g_2)) =& ~x\\
+\underline{then}(\underline{cons}(x,g_1,g_2)) =& ~g1 \\
+\underline{else}(\underline{cons}(x,g_1,g_2)) =& ~g2
+\end{align*}
+\qed
+\end{mdef}
+
+Implementierung:\\
+
+\texttt{Cons}($x,g_1,g_2$)
+\begin{minipage}{0.4\textwidth}
+\begin{empheq}[box=\fbox]{align*}
+&new(a)\\
+&a.id := \underline{max}(g_1.id, g_2.id) + 1\\
+&a.var := x\\
+&a.then := g1\\
+&a.else := g2 \\
+&return ~\texttt{Reduce}(a)
+\end{empheq}
+\end{minipage}
+
+\begin{mex}
+
+$X = \{x,y,z\}, \pi=(x,y,z)$ $f_1(x,y,z) = y+z, f_2(x,y,z) = y \cdot
+z)$
+\begin{itemize}
+\item[(1)]  Konstruiere $\underline{cons}(x,g_1,g_2)$.\footnote{$f(x,y,z) = x
+  \cdot y +x \cdot \bar y \cdot z = \bar x \cdot y \cdot z = x \cdot
+  f_1 + \bar x \cdot f_2$}
+\item[(2)] 
+Konstruiere $\underline{cons}(x,g_1,g_1)=g_1$.
+\end{itemize}
+\end{mex}
+
+\begin{ms}
+Seien $f_1,f_2:\mathds{B}^n \rightarrow \mathds{B}$ dargestellt durch
+OBDDs $g_1$ bzw. $g_2$. Dann wird durch $\underline{cons}(x,g_1,g_2)$
+die Funktion \bolf ~dargestellt, wobei gilt:
+\begin{equation*}
+f = x \cdot f_1 + \bar x f_2
+\end{equation*}
+\qed
+\end{ms}
+
+\begin{algneg}
+Voraussetzung: Computed Table $CT$ mit Eintr\"agen $(a,r)$, wobei $a$
+und $r$ OBDD-Knoten sind.\\
+
+\texttt{Neg}($a$)
+\begin{minipage}{0.6\textwidth}
+\begin{empheq}[box=\fbox]{align*}
+&\text{if a = 1-Senke then return } \mathds{O}\\
+&\text{else if a = O-Senke then return } \mathds{I}\\
+&\text{else if } \exists r:(a,r)\text{ in CT then return r mit } (a,r)
+\text{ in CT}\\
+&\text{else } r_1:= \texttt{Neg}(\underline{then}(a))\\
+&\hspace{0.75cm} r_2:= \texttt{Neg}(\underline{else}(a))\\
+&\hspace{0.75cm} r~:= \underline{cons}(\underline{var}(a),r_1,r_2)\\
+& \hspace{0.75cm} \underline{add}(a,r) \text{ to CT}\\
+& \hspace{0.75cm} \text{return r}
+\end{empheq}
+\end{minipage}
+\end{algneg}
+
+\begin{mex}
+Sei $X=\{y,z\}$ und $f=y+z$. Konstruiere
+$\underline{cons}(y,\mathds{I},\underline{cons}(z,\mathds{I},\mathds{O}))$.\\
+Wie sieht die Negation aus?
+\end{mex}
+
+\subsection{Bin\"are Operationen}
+Es gibt 16 Funktionen von $\mathds{B} \times \mathds{B}$ nach
+$\mathds{B}$, da $\vert \mathds{B}^{\mathds{B} \times \mathds{B}}\vert
+= 2^4 = 16$. So sind bspw. $+, \cdot, \rightarrow, \leftrightarrow$
+solche Funktionen.\\
+
+Wenn \bolf, $g: \mathds{B}^n \rightarrow \mathds{B}, \otimes:
+\mathds{B} \times \mathds{B} \rightarrow \mathds{B}$, dann ist $f
+\otimes g: \mathds{B}^n \rightarrow \mathds{B}$, wobei $f \otimes g$
+definiert ist durch:
+\begin{equation*}
+(f \otimes g)(x_1,\dots,x_n) = f(x_1,\otimes,x_n) \otimes g(x_1,\dots,x_n)
+\end{equation*}
+Also $\otimes :  \mathds{B}_n \times \mathds{B}_n \rightarrow
+\mathds{B}_n$.\\
+
+Beispiele:
+\begin{align*}
++:& ~f + g: \mathds{B}^n \rightarrow \mathds{B} \hspace{0.5cm} (f
+\sqcup g)\\
+\cdot:& ~f \cdot g: \mathds{B}^n \rightarrow \mathds{B} \hspace{0.5cm} (f
+\sqcap g)
+\end{align*}
+
+Problem:\\
+Gegeben seien Funktionen $f_1,f_2: \mathds{B}^n \rightarrow \mathds{B},
+\otimes: \mathds{B} \times \mathds{B} \rightarrow \mathds{B}$ und
+OBDDs $g_1$ f\"ur $f_1$ und $g_2$ f\"ur $f_2$.\\
+Konstruiere $g_1$ und $g_2$ OBDD zur Darstellung von $f_1 \otimes f_2$
+(\underline{Bin\"are Synthese}).\\
+
+Im Folgenden sollen zwei Ans\"atze zur Bin\"aren Synthese betrachtet
+werden
+\begin{itemize}
+\item[(1)] ITH-Funktion (if-then-else)
+\item[(2)] Apply-Funktion
+\end{itemize}
+
+Zu (1): ITH-Funktion\\
+$ITH: \mathds{B}_n \times \mathds{B}_n \times \mathds{B}_n \rightarrow
+\mathds{B}_n, ~ITH(f,g,h) = f \cdot g + \bar f h$\\
+
+Nun soll gezeigt werden, dass die Funktionen $f_1+f_2, f_1 \cdot f_2,
+\bar f$ mit der ITH-Funktion darstellbar sind.
+\begin{align*}
+ITH(f,\0, \1) =&~ f \cdot \0 + \bar f \cdot \1 = \bar f \\
+ITH(f_1,f_2, \0 ) =&~ f_1 \cdot f_2 + \overline{f_1} \cdot \0 = f_1 \cdot
+f_2\\
+ITH(f_1,\1,f_2) = &~ f_1 \cdot \1 + \overline{f_1} \cdot f_2 = f_1 +
+\overline{f_1} \cdot f_2 = (f_1 + \overline{f_1}) \cdot (f_1 + f_2) = f_1 + f_2
+\end{align*}
+Damit ist jede Funktion \bolf ~durch einen Term in ITH und $\0,\1$
+ausdr\"uckbar.\\
+
+Zu (2): Apply-Funktion\\
+$Apply: \mathds{B}_n \times \mathds{B}_n \times \mathds{B}_2
+\rightarrow \mathds{B}_n$, wobei die ersten zwei Argumente, sowie das
+Resultat OBDDs sind und das dritte Argument ein Operation ($\otimes$)
+ist.\\
+Die Apply-Funktion soll nun im weiteren Verlauf verwendet werden.
+
+\begin{ms}
+Es sei $f,g: \bol$ und $\otimes: \mathds{B} \times \mathds{B}
+\rightarrow \mathds{B}$. Dann gilt f\"ur jede Variable $x_i$
+(aufgefasst als Projektion $x_i: \mathds{B}_n \rightarrow \mathds{B}$: 
+\begin{align*}
+f \otimes g = x_i \cdot (f_{x_i} \otimes g_{x_i}) + \overline{x_i}
+\cdot (f_{\overline{x_i}} \otimes g_{\overline{x_i}})
+\end{align*}
+\end{ms}
+
+\begin{bw}
+Seien $(y_1, \dots, y_n) \in \mathds{B}^n$. Dann gilt $f \otimes
+g(y_1,\dots,y_n) = f(y_1,\dots,y_n) \otimes g(y_1,\dots,y_n)$.\\
+
+Rechte Seite:\\
+\begin{align*}
+&(x_i \cdot (f_{x_i} \otimes g_{x_i}) + \overline{x_i} \cdot
+(f_{\overline{x_i}} \otimes g_{\overline{x_i}}))(y_1,\dots,y_n) \\
+&= x_i \cdot (f_{x_i} \otimes g_{x_i})(y_1,\dots,y_n) + \overline{x_i} \cdot
+(f_{\overline{x_i}} \otimes g_{\overline{x_i}})(y_1,\dots,y_n)\\
+&= x_i(y_1,\dots,y_n) \cdot (f_{x_i}(y_1,\dots,y_n) \otimes g_{x_i}(y_1,\dots,y_n)) +
+\overline{x_i}(y_1,\dots,y_n) \cdot (f_{\overline{x_i}}(y_1,\dots,y_n) \otimes
+g_{\overline{x_i}}(y_1,\dots,y_n))\\
+&= y_i \cdot f(y_1,\dots,y_{i-1},1,y_{i+1}\dots,y_n) \otimes
+g(y_1,\dots,y_{i-1},1,y_{i+1}\dots,y_n) 
+\\&\hspace{0.4cm} + \overline{y_i} \cdot
+f(y_1,\dots,y_{i-1},0,y_{i+1},\dots,y_n) \otimes
+g(y_1,\dots,y_{i-1},0,y_{i+1},\dots,y_n)\\
+&\text{Fall 1: } y_i = 1\\
+&= f(y_1,\dots,y_{i-1},1,y_{i+1},\dots,y_n) \otimes
+g(y_1,\dots,y_{i-1},1,y_{i+1},\dots,y_n) + 0\\
+&= f(y_1,\dots,y_n) \otimes g(y_1,\dots,y_n)\\
+&\text{Fall 2: } y_1 = 0\\
+&= 0 + f(y_1,\dots,y_{i-1},1,y_{i+1},\dots,y_n) \otimes
+g(y_1,\dots,y_{i-1},1,y_{i+1},\dots,y_n)\\
+&= f(y_1,\dots,y_n) \otimes g(y_1,\dots,y_n)\\
+\end{align*}
+\qed
+\end{bw}
+
+\begin{binsys}
+Voraussetzung: $f_1,f_2: \bol$ werden durch die QOBDDs $g_1$
+bzw. $g_2$ (mit gleicher Variablenordnung) dargestellt und $\otimes:
+\mathds{B} \rightarrow \mathds{B}$ sei die gegebene bin\"are
+Operation.\\
+Dann berechnet \texttt{Apply}($g_1,g_2,\otimes$) das QOBDD f\"ur $g_1
+\otimes g_2$ (mit CT).\\
+
+\texttt{Apply}($a,b,\otimes$)
+\begin{minipage}{0.8\textwidth}
+  \begin{empheq}[box=\fbox]{align*}
+    \text{if } a \wedge b \text{ Senken }&\text{then return } a \otimes b
+    \text{ als QOBDD}\\ 
+    &\text{elseif } \exists r: ((a,b),r) \text{ in CT then return } r \text{ mit } ((a,b),r) \text{ in CT}\\
+    &\text{else } r_1 := \texttt{Apply}(\underline{then}(a),
+    \underline{then}(b), \otimes)\\
+    &\hspace{0.7cm}r_2 := \texttt{Apply}(\underline{else}(a), \underline{else}(b),
+    \otimes)\\
+    &\hspace{0.7cm}r := \texttt{Cons}(\underline{var}(a), r_1, r_2)\\
+    &\hspace{0.7cm}\underline{add}((a,b),r) \text{ to CT}\\
+    &\text{return } r
+  \end{empheq}
+\end{minipage}
+\end{binsys}
+
+\begin{mex}
+(1)\\
+Seien $x$ und $f_1,f_2: \mathds{B}^n \rightarrow \mathds{B}, \otimes:
+\mathds{B} \rightarrow \mathds{B}$ gegeben mit 
+\begin{align*}
+&f_1(x) = x, ~ f_2(x) = \bar x, ~ \otimes = \cdot\\
+&(f_1 \cdot f_2)(x) = x \cdot \bar x = 0
+\end{align*}
+($\texttt{Apply}(g_1,g_2,\otimes)$ durchf\"uhren, wobei $g_1$ und $g_2$
+  QOBDDs zu $f_1$ bzw. $f_2$. \\
+
+(2) $X={x,y}, ~\pi=(x,y), ~f_1: \mathds{B}^2 \rightarrow \mathds{B},
+~f_2: \mathds{B}^2 \rightarrow \mathds{B}, ~\otimes: \mathds{B}
+\rightarrow \mathds{B}$.
+\begin{align*}
+&f_1(x,y) = x\\
+&f_2(x,y) = x+y\\
+&\otimes = \cdot\\
+&(f_1 \cdot f_2)(x,y) = f_1(x,y) \cdot f_2(x,y) = x \cdot (x+y) = x
+\end{align*}
+\end{mex}
+
+\begin{apply-robdd}
+Im Gegensatz zu den QOBBDs m\"ussen hier 4 F\"alle unterschieden
+werden.
+\begin{itemize}
+\item[(1)] $a$ und $b$ sind Senken:\\ $\texttt{Apply}(a,b,\otimes) = a
+  \otimes b$ (als ROBDD)
+\item[(2)] $a$ und $b$ sind keine Senken und
+  $\underline{var}(a)=\underline{var}(b)=x$:\\
+$\texttt{Apply}(a,b,\otimes) =\texttt{Cons}(x,
+\texttt{Apply}(\underline{then}(a), \underline{then}(b), \otimes),
+\texttt{Apply}(\underline{else}(a), \underline{else}(b), \otimes))$
+\item[(3)] $a$ ist keine Senke und $b$ beliebig, aber
+  $\underline{var}(b) < \underline{var}(a) = x$, falls $b$ keine
+  Senke ist:\\
+$\texttt{Apply}(a,b,\otimes)=\texttt{Cons}(x,
+\texttt{Apply}(\underline{then}(a), b, \otimes),
+\texttt{Apply}(\underline{else}(a),b,\otimes))$
+\item[(4)] $b$ keine Senke und $a$ beliebig, aber $\var(a) < \var(b)=x$,
+  falls $a$ keine Senke ist:\\
+$\texttt{Apply}(a,b,\otimes)=\texttt{Cons}(x,
+\texttt{Apply}(a,\then(b), \otimes), \texttt{Apply}(a, \el(b), \otimes))$
+\end{itemize}
+\end{apply-robdd}
+
+\begin{mex}
+Seien $X=\{x\}, ~ f_1,f_2: \mathds{B}^2 \rightarrow \mathds{B},
+\otimes: \mathds{B} \rightarrow \mathds{B}$.
+\begin{align*}
+&f_1(x,y) = x\\
+&f_2(x,y) =  x + y\\
+&\otimes = \cdot\\
+&(f_1 \otimes f_2)(x,y) = x \cdot (x+y) = x
+\end{align*}
+\end{mex}
+
+\subsection{BDD-Pakete}
+Anwendung:
+\begin{itemize}
+\item[(1)] Schaltungsentfwurf, VLSI-Design
+\item[(2)] \href{http://de.wikipedia.org/wiki/Model_Checking}{Symbolisches Model Checking}
+\item[(3)] Algorithmik, gro\ss e Graphen
+\item[(4)] Spieltheorie (\href{http://www.informatik.uni-kiel.de/~stb/}{Stefan Bolus})
+\item[(5)] Relationentheorie
+\end{itemize}
+
+Pakete:
+\begin{itemize}
+\item[(1)] \href{http://vlsi.colorado.edu/~fabio/CUDD/}{CUDD}
+\item[(2)] \href{http://www.cs.cmu.edu/~modelcheck/bdd.html}{CMU-BDD-Paket}
+\item[(3)] \href{http://buddy.sourceforge.net/manual/main.html}{BuDDy}
+\item[(4)] \href{http://www.sosy-lab.org/~dbeyer/CrocoPat/}{CrocoPat}
+\item[(5)] \href{http://www.informatik.uni-kiel.de/~progsys/relview/}{RelView} und \href{http://korsika.informatik.uni-kiel.de/kure2/}{Kure}
+\end{itemize}
+
+\newpage
+
+\section{Anwendung der Spieltheorie}
+In diesem Abschnitt werden folgende Themen bearbeitet:
+\begin{itemize}
+\item Einfache Spiele und QOBDDs
+\item Berechnung von Schl\"usselspielern
+\item Bestimmung der W\"unschenswert-Relation
+\end{itemize}
+
+Kurz zur Spieltheorie:\\
+Man unterscheidet zwischen Konkurrierenden und kooperierenden
+Spielen. Zweiteres wird noch in einfache Spiele\footnote{Nutzen ist
+  hier 0 oder 1} und nicht-einfach Spiele unterteilt.\\
+Mit BDDs kann man einfache Spiele besonders gut berechnen. Einfache
+Spiele entsprechen monotonen Funktionen.
+
+\subsection{Einfache Spiele und QOBDDs}
+\begin{mdef}
+Ein faches Spiel ist ein Par $(X,\mathcal{W})$ mit:
+\begin{itemize}
+\item[(1)] $X$ endliche, nicht-leere Menge von Spielern
+\item[(2)] $\mathcal{W} \subseteq 2^X$ mit der Eigenschaft, dass f\"ur
+  alle $Y,Z \in 2^X$:
+\begin{align*}
+Y \subseteq \mathcal{W} \wedge Y \subseteq Z \Rightarrow Z \in W
+\end{align*}
+$Y \in 2^X$ hei\ss t \underline{Koalition}, $Y \in \mathcal{W}$ hei\ss
+t \underline{gewinnende Koalition} und $Y \in 2^{X \setminus
+  \mathcal{W}}$ \underline{verlierende Koalition}.
+\qed
+\end{itemize}
+\end{mdef}
+
+\begin{mdef}
+Sei $(X, \mathcal{W})$ ein einfacher Spiel. Ein Paar $(Q, w)$ mit $Q
+\in \mathds{N}_{>0}$ und $w: X \rightarrow \mathds{N}$ hei\ss t \underline{gewichtete
+  Dartellung}, falls f\"ur alle $Y \in 2^X$ gilt:
+\begin{align*}
+Y \in \mathcal{W} \Leftrightarrow \sum_{x \in Y} w(x) \geq Q
+\end{align*}
+Besitzt ein Spiel eine gewichtete Darstellung, so hei\ss t es
+\underline{gewichtetes Mehrheitsspiel} (GMS).
+\qed
+\end{mdef}
+Normalfall der Schreibweise ist dabei wie folgt:\\
+$X=\{x_1,\dots, x_n\}, \lbrack Q; w_1, \dots, w_n \rbrack$, wobei $w_i
+= w(x_i)$ und $Q$ Quote.
+
+\begin{mex}\label{mex:413}
+(1)\\
+Sei $(X,\mathcal{W})$ mit $X = \{x_1,x_2, x_3\}, ~ \mathcal{W} =
+\{\{x_1,x_2\}, \{x_2,x_3\}, \{x_1,x_3\}.\{x_1,x_2,x_3\}\}$.\\
+$(X,\mathcal{W})$ ist GMS mit $\lbrack 6;5,5,1\rbrack$.\\
+Warum sind die Mengen in $\mathcal{W}$ gewinnende Koalitionen?\\
+
+(2)\\
+Sei $(X,\mathcal{W})$ einfaches Spiel, gegeben durch $X = \{ x_1, x_2,
+x_2, x_4, x_5\}$ und $\lbrack 312; 239, 146, 93, 76, 68
+\rbrack$\footnote{oder $\lbrack 3; 2, 1, 1, 1, 0 \rbrack$ in der
+  minimalen Variante}. Hierbei stehen die Elemente aus $X$ f\"ur die
+folgenden Partein:\\
+$x_1 \mathrel{\widehat{=}}$  CDU/CSU, $x_2 \mathrel{\widehat{=}}$
+SPD, $x_3 \mathrel{\widehat{=}}$  = FDP, $x_4 \mathrel{\widehat{=}}$
+Die Linke, $x_5 \mathrel{\widehat{=}}$  Die Gr\"unen und die Gewichte
+entsprechen der Sitzverteilung nach der Bundestagswahl 2009.\\
+Wie sieht nun $\mathcal{W}$ aus?
+\end{mex}
+
+\begin{mdef}
+Sei \sg einfaches Spiel. Dann hei\ss t dies
+\underline{Vektorgerichtetes Mehrheitsspiel} (VGMS), falls es $k \in
+\mathds{N}_{>0}$ und $Q^{(1)},\dots,Q^{(k)} \in \mathds{N}_{>0}$ und
+$w^{(j)}: X \rightarrow \mathds{N}$ f\"ur alle $j \in \{1, \dots, k\}$
+gibt mit der Eigenschaft, dass f\"ur alle $Y \in 2^X$ gilt:
+\begin{align*}
+Y \in \mathcal{W} \Leftrightarrow \forall j \in \{1, \dots, k\}:
+\sum_{x \in Y} w^{(j)}(x) = Q^{(j)}
+\end{align*}
+\qed
+\end{mdef}
+
+$(Q^{(j)},w^{(j)})$ hei\ss t $j$-tes GMS von VGMS. Weiter gilt:
+\begin{align*}
+Y \text{ gewinnend in VGMS } \Leftrightarrow Y \text{ gewinnend in
+  jedem der einzelnen GMS}
+\end{align*}
+Normfall der Schreibweise ist dabei wie folgt:\\
+$\lbrack Q^{(1)},w^{(1)}_1,\dots, w^{(1)}_n \rbrack \wedge \dots
+\wedge \lbrack Q^{(k)},w^{(k)}_1,\dots, w^{(k)}_n \rbrack$ mit
+$w_i^{(j)}=w^{(j)}(x_i)$ und $x_1, \dots, x_n$ als Reihenfolge.
+
+\begin{mex}\label{mex:415}
+Vertrag von Nizza\\
+$X = \{x_1, \dots, x_{27}\}$\\
+$\lbrack 265; 29, 29, 29, 29, 27, 27, 14, 13, 12, 12, 12, 12, 12, 10,
+10, 10, 7, 7, 7, 7, 7, 4, 4, 4, 4, 4, 3\rbrack ~\wedge~ \lbrack 14; 1,
+\dots, 1 \rbrack ~\wedge$\\
+$\lbrack 620; 170, 123, 122, 120, 82, 89, 47, 33, 22, 21, 21, 21, 21,
+18, 17, 17, 11, 11, 11, 8, 8, 4, 4, 3, 2, 1, 1\rbrack$\\
+VGMS kann dabei nicht auf GMS minimiert bzw. zur\"urckgef\"uhrt werden.
+\end{mex}
+
+\begin{mk}
+Bei einem eifnach Spiel \sg ist im Folgenden $X = \{x_1, \dots, x_n\}$
+und $X$ ist auch die Menge der Variablen zur Definition von \bolf und
+der darstellenden QOBDDs Variablenordnung sei $\pi = (x_1, \dots, x_n)$.
+\qed
+\end{mk}
+
+\begin{mdef}
+Sei \sg einfaches Spiel. Zu $Y \in 2^X$ ist der
+\underline{charakteristische Verktor} $\chi(Y) \in \mathds{B}^n$
+definiert durch:
+\begin{align*}
+\chi(Y)_i =1 \Leftrightarrow x_i \in Y \text{ f\"ur alle } i \in \{1,
+\dots, n\}
+\end{align*}
+\qed
+\end{mdef}
+
+\begin{mdef}
+Sei \sg enfaches Spiel. 
+\begin{itemize}
+\item[(1)] Eine Funktion \bolf stellt \sg dar, falls f\"ur alle $Y \in
+  2^X$ gilt:
+\begin{align*}
+Y \in W \Leftrightarrow f(\chi(Y)) = 1
+\end{align*}
+\item[(2)] Ein QOBDD $g$ \"uber $X$ stellt \sg dar, falls es die
+  Funktion $f$ darstellt, die auch \sg darstellt.
+\end{itemize}
+\qed
+\end{mdef}
+
+\begin{mex}
+(1) Spiel von \hyperref[mex:413]{Bsp. \ref{mex:413} (1)}\\
+(2) \hyperref[mex:413]{Bundestag Sept. 2009}
+\end{mex}
+
+\begin{mdef}
+Sei $g$ ein QOBDD und $w = (p_1, \dots, p_k)$ ein Weg von einem
+inneren Knoten in $g$ zu $\mathds{I}$. Dann definiert man
+\begin{align*}
+\underline{eins}(w) = \{\var(\alpha(p_i)) \mid 1 \leq i \leq k \wedge
+p_i \text{ 1-Pfeil}\}
+\end{align*}
+\qed
+\end{mdef}
+
+\begin{ms}
+Es sei \sg ein einfaches Spiel und $r$ Wurzel des QOBDDs, das \sg
+darstellt. Dann gilt f\"ur alle $Y \in 2^X$:
+\begin{align*}
+Y \in W \Leftrightarrow \text{ Es gibt Weg } w \text{ von } r \text{
+  nach } \mathds{I} \text{ mit } Y = \underline{eins}(w)
+\end{align*}
+\qed
+\end{ms}
+
+\begin{mdef}
+Es sei $g$ ein QOBDD mit Knotenmengen $V$ gegeben. Dann ist die
+Funktion $\underline{set}:V \rightarrow 2^X$ definiert durch:
+\begin{align*}
+  \set(a) = \begin{cases} \{\eins(w) \mid w \text{ ist Weg von } a
+    \text{ nach } \mathds{I} \} &,~ a \text{ ist innerer Knoten }\\
+    \{\emptyset\} &,~ a = \mathds{I}\\
+    ~\emptyset &,~ a = \mathds{O}
+  \end{cases}
+\end{align*}
+\qed
+\end{mdef}
+Wenn \sg einfach Spiel und $r$ die Wurzel des dargestellten QOBDDs,
+dann gilt $\set(r) = \mathcal{W}$.
+
+\begin{ms}
+Es sei \sg ein GMS mit gewichteter Darstellung \gms. Definiere f\"ur
+alle $i \in \{1, \dots, n+1\}$ und $q \in \mathds{R}$ (die Funktion
+$f:\{1, \dots, n+1\} \times \mathds{R} \rightarrow QOBDD$):
+\begin{align*}
+&f(i,q) = \begin{cases}
+\mathds{I} &,~ i = n+1 \wedge q \leq 0\\
+\mathds{O} &,~ i = n+1 \wedge q > 0\\
+\cons(x_i, f(i+1, q-w_i), f(i+1, q)) &,\text{ sonst }
+\end{cases}\\
+&\text{Dann gilt:}\\
+&\set(f(i,q)) = ~\biggr \{ Y \in 2^{\{x_1,\dots,x_n\}} \biggr \vert \sum_{x \in Y} w(x)
+\geq q \biggr\}\\
+&\text{Insbesondere gilt:}\\
+&\set(f(1,Q))= ~\biggr\{Y \in 2^X \biggr \vert \sum_{x \in Y} w(x) \geq
+Q \biggr \} = \mathcal{W}
+\end{align*}
+\end{ms}
+
+\begin{bw}
+Induktion nach Differenz von $n+1-i$\\
+\underline{IA:} $n+1-i = 0$, d.h. $i = n+1$\\
+Fall 1. $q \leq 0$. Dann gilt 
+\begin{align*}
+&~f(i,q) = \mathds{I}\\
+&\biggr \{Y \in 2^{\emptyset} \biggr \vert \sum_{x \in Y} w(x) \geq q
+\biggr \} = \{\emptyset\} = \set(\mathds{I}) = \set(f(i,q))
+\end{align*}
+Fall 2. $q > 0$. Dann gilt
+\begin{align*}
+&~f(i,q) = \mathds{O}\\
+&\biggr \{Y \in 2^{\emptyset} \biggr \vert \sum_{x \in Y} w(x) \geq q
+\biggr \} = \emptyset = \set(\mathds{O}) = \set(f(i,q))
+\end{align*}
+
+\underline{IS:} Sei $n+1-i>0$, d.h. $i < n+1$. Dann gilt f\"ur alle $Y
+\in 2^X$
+\begin{align*}
+  Y \in \set(f(i,q)) \Leftrightarrow &~ Y \in
+  \set(\cons(x_i,f(i+1,q-w_i,
+  f(i+1, q))\\
+  \Leftrightarrow &~ (Y \subseteq \{x_i, \dots, x_n\} \wedge x_i \in Y
+  \wedge \sum_{x \in Y-x_i} w(x) \geq q - w_i) \\ &~\vee (Y \subseteq
+  \{x_i, \dots, x_n\} \wedge x_i \in Y
+  \wedge \sum_{x \in Y-x_i} w(x) \geq q)\\
+  \Leftrightarrow &~ (Y \subseteq \{x_i, \dots, x_n\} \wedge x_i \in Y
+  \wedge \sum_{x \in Y} w(x) \geq q)\\
+  & ~\vee (Y \subseteq \{x_i, \dots, x_n\} \wedge x_i \in Y \wedge
+  \sum_{x \in Y} w(x) \geq q)\\
+  & \Leftrightarrow Y \subseteq \{x_1, \dots, x_n\} \wedge x_i \in Y
+  \wedge \sum_{x \in Y} \leq q
+\end{align*}
+\qed
+\end{bw}
+
+\begin{mex}
+Sei $X = \{x_1,x_2,x_3\}$ gewichtete Darstellung $\lbrack 6;
+5,5,1\rbrack$. Bestimmte $f(1,6)$.
+\end{mex}
+
+\subsection{Bestimmung von Schl\"usselspielern}
+\begin{mdef}
+Sei \sg einfaches Spiel.
+\begin{itemize}
+\item[(1)] Eine gewinnende Koalition $Y \in \mathcal{W}$ hei\ss t
+  \underline{minimal} gewinnend, falls $Z \not \in \mathcal{W}$ f\"ur
+  alle $Z \subseteq Y$.
+\item[(2)] $\mathcal{W}_{min} = \{ Y \in W ~\vert~ Y \text{ minimal
+    gewinnend} \}$
+\end{itemize}
+\qed
+\end{mdef}
+
+\begin{mdef}
+Sei \sg einfaches Spiel. Ein Spieler $x \in X$ hei\ss t
+\begin{itemize}
+\item[(1)] \underline{Diktator}, falls $\mathcal{W}_{min} =
+\{\{x\}\}$,
+\item[(2)] \underline{Vetospieler}, falls f\"ur alle $Y \in
+  \mathcal{W}$ gilt: $x \in Y$,
+\item[(3)] \underline{belanglos}, falls f\"ur alle $Y \in
+  \mathcal{W}_{min}$ gilt: $x \not \in Y$.
+\end{itemize}
+\qed
+\end{mdef}
+
+Der Diktator ist am m\"achtigsten; Vetospieler k\"onnen nichts
+erzwingen, aber alles verhindern; belanglose Spieler haben keinerlei
+Macht.
+
+\begin{ms}
+In einem einfachen Spiel gibt es h\"ochstens einen Diktator.
+\qed
+\end{ms}
+
+\begin{ms}
+Ist $x \in X$ ein Diktator im einfachen Spiel \sg, so gilt f\"ur alle
+$y \in X \setminus \{x\}: y \text{ ist belanglos}$.
+\end{ms}
+
+\begin{bw}
+Da $x$ Diktator ist, gilt $\mathcal{W}_{min} = \{\{x\}\}$. Ist $Y \in
+\mathcal{W}_{min}$, so gilt $Y = \{\{x\}\}$, also gilt $y
+\not \in Y$, da $y \not = x$. Damit ist $y$ belanglos.
+\qed
+\end{bw}
+
+\begin{mex}
+(1) Im Spiel, dass den Bundestag von 1957 modelliert ist $x_1$
+Diktator. Dabei sei $X =\{x_1,x_2,x_3,x_4\}$ mit gewichteter
+Darstellung $\lbrack 260; 277,181, 44, 17 \rbrack$.\\
+
+(2) Sei $X = \{x_1, \dots, x_15\}$ mit gewichteter Darstellung
+$\lbrack 39; 7, 7, 7, 7, 7, 1, ,1 ,1 ,1 ,1, 1, 1, 1, 1, 1
+\rbrack$. Dieses Spiel modelliert den UN Sicherheitsrat. Die
+Darstellung als VGMS mit 2 GMS sieht dabei wie folgt aus:
+$\lbrack 5; 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \rbrack
+~\wedge~ \lbrack 9; 1, \dots, 1\rbrack$\\
+
+(3) Im Spiel, das den 1. EU Vetrag von 1958 modelliert, ist $x_6$
+(Luxemburg) ein belangloser Spieler. Dabei sei $X = \{x_1,\dots,x_6\}$
+GMS mit gewichteter Darstellung $\lbrack 12; 4, 4, 4, 2, 2, 1\rbrack$.
+\end{mex}
+
+\begin{ml}
+Es sei \sg einfach Spiel. Dann gilt f\"ur alle $x \in X$:
+\begin{align*}
+x \text{ belanglos } \Leftrightarrow \forall Y \in \mathcal{W}: Y-x
+\in \mathcal{W}
+\end{align*}
+\end{ml}
+
+\begin{bw}
+\glqq $\Rightarrow$\grqq: Sei $Y \in \W$ beliebig. Der Fall, dass $x
+\not \in Y$ ist klar, daher sei $x \in Y$. Definiere:
+\begin{align*}
+\mathcal{K}:= \{ Z \in \W ~\vert~ x \in Z \wedge Z \subseteq Y \}
+\end{align*}
+$\mathcal{K} \not = \emptyset$, da $Y \in \mathcal{K}$. Wegen $\vert X
+\vert < \infty$ gilt auch $\mathcal{K} < \infty$ und damit existiert
+in $\mathcal{K}$ mindestens ein Element $Z_0$.
+
+Angenommen $Y-x \not \in \W$. Dann gilt $Z_0-x \not \in \W$, denn
+$Z_0-x \in \W$ w\"urde $Y-x \in \W$ implizieren (Monotonie). Also gilt
+$Z_0$ minimal gewinnend mit $x \in Z_0$. Das ist ein Widerspruch sazu,
+dass $x$ belanglos ist.\\
+\glqq $\Leftarrow$\grqq: Sei $x$ nicht belanglos. Dann gibt es $Z \in
+\W_{min}$ mit $x \in Z$. Da $Z \in \W_{min}$ folgt $Z \in \W$. Also
+gilt nach Annahme $Z-x \in \W$ und damit wiederum $Z \not \in
+\W_{min}$. Widerspruch!
+\qed
+\end{bw}
+
+Folgende Aussagen sind ebenfall \"aquivalent:
+\begin{align*}
+x \text{ belanglos } \Leftrightarrow &~ \forall~ Y \in 2^X: Y \in \W
+\leftrightarrow Y-x \in \W\\
+&\text{ Sei nun } f \text{ eine Funktion, die QOBDD darstellt und }
+x=x_i. \text{ Dann gilt: }\\
+x_i \text{ belanglos } \Leftrightarrow &~ \forall~
+y_1,\dots,y_{n-1}:~ f(y_1,\dots,y_{i-1},1,y_{i+1},\dots, y_n)=f(y_1,\dots,y_{i-1},0,y_{i+1},\dots,y_n)
+\end{align*}
+
+\begin{ms}
+Sei \sg durch QOBDD $g$ dargestellt. Dann gilt f\"ur alle $x \in X$:
+\begin{align*}
+x_i \text{ belanglos } \Leftrightarrow \text{ f\"ur alle } a \in V
+\text { mit } \var(a)=x_i \text{ gilt } \then(a) = \el(a)
+\end{align*}
+\qed
+\end{ms}
+
+\begin{ms}
+Seien \sg einfach Spiel, $g$ darstellendes QOBDD und $x \in X$. Dann
+gilt:
+\begin{align*}
+x \text{ Vetospieler } \Leftrightarrow \text{ F\"ur alle Knoten } a
+\text{ mit } \var(a) = x \text{ gilt } \set(\el(a)) = \emptyset
+\end{align*}
+\end{ms}
+
+\begin{bw}
+Es soll bewiesen werden:
+\begin{align*}
+x \text{ kein Vetospieler } \Leftrightarrow~ \exists \text{ Knoten } a
+\text{ und } \var(a) = x \text{ und } \set(\el(a)) \not = \emptyset
+\end{align*}
+Zum Beweis sei o.B.d.A. $x = x_i$ angenommen.\\
+
+\glqq $\Rightarrow$\grqq~Sei $x_i$ kein Vetospieler. Dann gibt es
+$Y \in W$ mit $x \not \in Y$. Also gibt es einen Weg von der Wurzel
+$r$ zu $\mathds{I}$ mit $Y = \eins(w)$. Sei $w =
+(p_1,\dots,p_n)$. Dann ist $\alpha(p_i) \not \in Y$ und somit $p_i$
+0-Pfeil.\\
+Es gilt mit $a:= \alpha(p_i)$, dass $\var(a) = x_i$. Definiere nun $w':=
+(p_{i+1}, \dots, p_n)$. Dann ist $w'$ Weg von $\el(a)$ nach
+$\mathds{I}$. (Damit gilt $\eins(w) \not = \emptyset$.) Weil $w'$ ein
+Weg von $\el(a)$ nach $\mathds{I}$ ist, gilt $\set(\el(a)) \not =
+\emptyset$.\\
+
+\glqq $\Leftarrow$\grqq~Es sei $a$ ein Knoten mit $\var(a) = x_i$ und
+$\set(\el(a)) \not = \emptyset$. Damit gibt es einen Weg $w'$ von $\el(a)$
+nach $\mathds{I}$. Erg\"anze $w'$ zu einem Weg von $r$ nach
+$\mathds{I}$ namens $w$. Sei nun $Y := \set(w)$. Dann gilt $Y \in
+\W$. Nach Konstruktion von $w$ gilt, dass $w_i$ ein 0-Pfeil ist. Damit
+$x_i \not \in \set(w)$, also $x_i \not \in Y$. Also ist $x_i$ kein
+Vetospieler. \qed
+\end{bw}
+
+\begin{ms}
+Es seien \sg einfach Spiel, $g$ darstellendes QOBDD und $x_i$
+Spieler. Dann gilt $x_i$ Vetospieler genau dann, wenn f\"ur alle
+Knoten der Schicht $i$, $\mathds{I}$ \"uber alle Wege
+\"uber den $\el$-Nachfolger nicht erreichbar ist.
+\qed
+\end{ms}
+
+\begin{ml}
+Es sei \sg ein einfaches Spiel. Dann gilt f\"ur alle $x \in X$:
+\begin{align*}
+x \text{ Diktator } \Leftrightarrow~ \W = \{Y \in 2^X ~\vert~ x \in
+Y\}
+\end{align*}
+\end{ml}
+
+\begin{bw}
+\glqq $\Longrightarrow$\grqq ~zu zeigen: $Y \in \W \Leftrightarrow x \in Y$ f\"ur
+alle $Y \in 2^X$\\
+\glqq $\Rightarrow$\grqq~Wenn $Y \in \W$, dann gibt es $Z \in
+\W_{min}$ mit $Z \subseteq Y$ (da $\vert X\vert < \infty$). Da $x$
+Diktator ist, gilt $\W_{min} = \{\{x\}\}$, also $Z = \{x\}$, also $x
+\in Y$.\\
+\glqq $\Leftarrow$\grqq~Sei $x \in Y$. Dann $\{x\} \subseteq Y$. Da
+$x$ ein Diktator ist, gilt $\{x\} \in \W_{min} \subseteq W$. Monotonie
+und $\{x\} \in Y$ bringen $Y \in \W$.\\
+
+\glqq $\Longleftarrow$\grqq~Es gilt $\{x\} \in \W$, da $\{x\} \in 2^X$ und
+$x \in \{x\}$ und vorausgesetzer Gleichheit. Also gilt $\{x\} \in
+\W_{min}$. Sei $Y \in \W_{min}$. Dann gelten $Y \in \W$ und $x \in Y$
+wegen gefordeter Gleichheit. Also gilt $Y = \{x\}$ und letztendlich
+ist damit $\{x\}$ ein Diktator.\\
+\qed
+\end{bw}
+
+Im Folgenden soll ein spezieller QOBDD namens $\ith$ betrachtet
+werden. Daf\"ur ist mit $a$ als Wurzel des
+QOBDDs definiert:
+\begin{align*}
+\set(\ith(i)) = \{ eins(w) ~\vert~ w \text{ Weg von } a \text{ nach }
+\mathds{I}\} = \{Y \in 2^X ~\vert~ x_i \in Y\}
+\end{align*}
+
+\begin{ms}
+Es sei \sg einfaches Spiel und $g$ das darstellende QOBDD. Es ist $x_i
+\in X$ genau dann Diktator, wenn $g$ gleich $\ith(i)$ ist.\\
+\qed
+\end{ms}
+
+BILD von $\ith$.
+
+\subsection{Die W\"unschenswert-Relation}
+\begin{mdef}
+Sei \sg einfaches Spiel. Die Relation $\preccurlyeq _{I}$ auf $X$
+ist f\"ur alle $x,y \in X$ definiert durch:
+\begin{align*}
+x \ww y \Leftrightarrow &~\forall~ Y \in 2^X: x \not \in Y \wedge y
+\not \in Y \wedge Y+x \in \W \Rightarrow Y+y \in \W\\
+\Leftrightarrow &~\forall Y \in 2^{X-x-y}: Y+x \in \W \Rightarrow Y+y
+\in \W
+\end{align*}
+$\ww$ hei\ss t \underline{W\"unschenswert-Relation} (auf Spielern) und
+$x \ww y$ bedeutet \glqq $y$ ist w\"unschenswerter als $x$\grqq.\\
+\qed
+\end{mdef}
+
+\begin{ms}
+F\"ur alle einfachen Spiele \sg ist $\ww$ eine
+Quasi-Ordnung\footnote{also reflexiv und transitiv}.
+\end{ms}
+
+\begin{bw}
+Reflexivit\"at:\\
+trivial\\
+
+Transitivit\"at:\\
+Seien $x,y,z \in X$ mit $x \ww y$ und $y \ww z$. zum Beweis von $x \ww
+z$ sei $Y \in 2^X$ mit $x \not \in Y$ und $z \not \in Y$ beliebig
+vorgegeben. Weiterhin sei $Y+x \in \W$.\\
+\underline{Fall 1:} $y \not \in Y$ Wegen $x \not \in Y$, $y \not
+\in Y$ und $x \ww y$ sowie $Y+x \in \W$ folgt $Y+x \in \W$. Analog ist
+$Y+x \in W$.\\
+\underline{Fall 2:} $y \in Y$.\\
+Unterfall 1. $x=z$ trivial\\
+Unterfall 2. $x \not = z$ Definiere $Y' := Y-y.$ Dann $x,y,z
+  \not \in Y'$.
+\begin{align*}
+Y+x \in \W \Leftrightarrow &~ Y'+y+x \in \W\\
+(x \not = y) \Leftrightarrow &~ Y'+x+y \in \W\\
+(y \not \in Y'+x, z \not \in Y'+x, y \ww z) \Rightarrow &~ Y'+x+z \in
+\W\\
+x \not = z \Leftrightarrow &~ Y'+z+x \in \W\\
+x \not \in Y'+z, y \not \in Y'+z, x \ww y \Leftrightarrow &~ Y'+z+y
+\in \W\\
+y \not = z \Leftrightarrow &~ Y'+y+z \in \W\\
+\Leftrightarrow &~ Y+z \in \W
+\end{align*}
+\qed
+\end{bw}
+
+\begin{ms}
+Ist \sg GMS mit gewichteter Darstellung $(Q,w)$, so gilt f\"ur alle
+$x,y \in X$:
+\begin{align*}
+w(x) \leq w(y) \Rightarrow x \ww y
+\end{align*}
+\end{ms}
+
+\begin{bw}
+Sei $Y \in 2^X$ mit $x \not \in Y$ und $y \not \in Y$. Dann gilt
+\begin{align*}
+Y+x \in \W \Leftrightarrow &~ w(x) + \sum_{z \in Y} w(z) \geq Q\\
+\Rightarrow &~ w(y) + \sum_{z \in Y} w(z) \geq Q\\
+\Leftrightarrow &~ Y+y \in \W
+\end{align*}
+\qed
+\end{bw}
+
+\begin{ms}
+Die Relation $\ww$ und $\approx_I$ auf $X$ sind f\"ur ein einfach
+Spiel \sg und alle Spieler $x,y \in X$ definiert durch:
+\begin{align*}
+x \prec_I y &\Leftrightarrow (x \ww y) ~\wedge~ \not(y \ww x)\\
+& \text{\glqq y echt w\"unschenswerter als x\grqq} 
+\end{align*}
+\begin{align*}
+x \approx_I y &\Leftrightarrow (x \ww y) ~\wedge~ (y \ww x)\\
+& \text{\glqq x,y gleich w\"unschenswert\grqq} 
+\end{align*}
+Dabei gilt, dass $\prec_I$ eine strikte
+Quasi-Ordnung\footnote{asymmetrisch und transitiv bzw. irreflexiv und
+  transitiv} und $\approx_I$ eine
+\"Aquivalenzrelation\footnote{symmetrisch, transitiv und reflexiv}
+ist.
+\qed
+\end{ms}
+
+\begin{ml}
+Es sei \sg ein einfaches Spiel, dann sind f\"ur alle $x,y \in X$ mit
+$x \not = y$ die folgenden zwei Aussagen \"aquivalent:
+\begin{align*}
+&\text{ (1) } x \ww y\\
+&\text{ (2) } \{Y-x ~\vert~ x \in Y \wedge Y \in \W \wedge y \not \in
+Y\} \subseteq \{Y-y ~\vert~ y \in Y \wedge Y \in \W\}
+\end{align*}
+\end{ml}
+
+\begin{bw}
+\glqq(1) $\Rightarrow$ (2)\grqq~ Es gelte $x \ww y$. Sei $Z \in \{Y-x ~\vert~ x \in Y \wedge Y \in \W \wedge y \not \in
+Y\}$. Also gibt es $Y$ mit $Y \in \W$,
+$x \in Y$, $y \not \in Y$ und $Z = Y-x$. 
+\begin{align*}
+Y \in W \Leftrightarrow &~ Y-x+x \in W \hspace{2cm}&\text{ wegen } x \in
+Y \text{ gilt } Y=Y-x+x\\
+\Leftrightarrow &~ Z+x \in \W \\
+\Rightarrow &~ Z+y \in \W &\text{ wegen } x \ww y, x \not
+\in Z \text{ und } y \not \in Z
+\end{align*}
+Definiere nun $Y' := Z+y$. Dann gilt $Y' \in \W$. Weiter gilt $y \in
+Y'$. Also ist $Y'-y \in  \{Y-y ~\vert~ y \in Y \wedge Y \in
+\W\}$. Weiter ist $y \not \in Y$, also $Y'-y=Z+y-y=Z$ und letztendlich
+$Z = Y'-y$. Damit gilt $Z \in  \{Y-y ~\vert~ y \in Y \wedge Y \in
+\W\}$.\\
+
+\glqq(2) $\Rightarrow$ (1)\grqq~ Es gelte die Mengeninklusion. Zum
+Beweis von $x \ww y$ sei $Y \in 2^X$ mit $x \not \in Y$, $y \not \in
+Y$ und $Y+x \in \W$ gegeben.\\
+Definiere nun $Z = Y+x$. Dann ist $Z \in \W$, $x \in Z$ und $y \not
+\in Z$ (wegen $x \not = y$). Damit gilt $Z-x \in \{Y-x ~\vert~ x \in Y \wedge Y \in \W \wedge y \not \in
+Y\}$. Folglich gilt auch $Z \in \{Y-y ~\vert~ y \in Y \wedge Y \in
+\W\}$. Wegen $Z-x=Y$ ist $Y \in  \{Y-x ~\vert~ x \in Y \wedge Y \in \W \wedge y \not \in
+Y\}$. Dann gibt es $Z' \in W$ mit $y \in Z'$ und $Y = Z'-y$. Dann ist
+$Y+y=Z'-y+y=Z' \in \W$.
+
+\qed
+\end{bw}
+Die Voraussetzung f\"ur solch ein Vorgehen ist eine Operation
+\texttt{Remove} auf QOBDDs, so dass f\"ur alle Knoten $a$ und alle $i
+\in \{1,\dots,n\}$ gilt:
+\begin{align*}
+\set(\texttt{Remove}(a,i))) = \{Y-x_i ~\vert~ Y \in \set(a) \wedge x_i
+\in Y\}
+\end{align*}
+
+\begin{ml}
+\begin{itemize}
+\item[(1)] F\"ur alle QOBDDs $\ith(i)$ gilt:
+\begin{align*}
+\set(\texttt{Neg}(\ith(i)) = 2^X \setminus \set(\ith(i)) = 2^{X-x_i}
+\end{align*}
+\item[(2)] F\"ur alle QOBDDs $g_1$ und $g_2$ gilt mit $g_1 \sqcap g_2
+  = \texttt{Apply}(g_1,g_2,\cdot)$:
+\begin{align*}
+\set(g_1 \sqcap g_2) = \set(g_1) \cap \set(g_2)
+\end{align*}
+\end{itemize}
+\qed
+\end{ml}
+
+\begin{ms}
+Es sei \sg einfaches Spiel. Dann sind f\"ur alle $x_i, x_j \in X$ mit
+$i \not \in j$ die folgenden Aussagen \"aquivalent:
+\begin{align*}
+\text{ (1) }& x_i \ww x_j\\
+\text{ (2) }& \text{Ist } g \text{ das QOBDD zur Darstellung von } (X,\W) \text{
+  mit Wurzel } r \text{\, so ist }\\
+& \texttt{Remove}(r \cap
+\texttt{Neg}(\ith(j)),i) \cap \texttt{Neg}(\texttt{Remove}(r,j)) \text{
+  gleich dem QOBDD zur Darstellung von } \0: \bol
+\end{align*}
+\end{ms}
+
+\begin{bw}
+Sei $r$ Wurzel von $g$. Dann gilt $\set(r) = \W$.
+\begin{align*}
+x_i \ww x_j \Leftrightarrow&~ \{Y-x_i ~\vert~ x_i \in Y \wedge Y \in \W \wedge x_j \not
+\in Y\} \subseteq \{Y-x_j ~\vert~ x_j \in Y \wedge Y \in \W\}\\
+\Leftrightarrow&~ \{Y-x_i ~\vert~ x_i \in Y \wedge Y \in \set(r) \wedge
+x_j \not \in Y\} \subseteq \{Y-x_j ~\vert~ x_j \in Y \wedge Y \in
+\set(r)\}
+\end{align*}
+\begin{align*}
+\{Y-x_i ~\vert~ x_i \in Y \wedge Y \in \set(r) \wedge
+x_j \not \in Y\} =&~ \{Y-x_i ~\vert~ Y \in 2^{X-x_j} \wedge Y \in
+\set(r) \wedge x_i \in Y\}\\
+=&~ \{Y-x_i ~\vert~ Y \in \set(\texttt{Neg}(\ith(j))) \wedge Y \in
+\set(r) \wedge x_i \in Y\} \\
+=&~ \{Y-x_i ~\vert~ Y \in \set(r \sqcap \texttt{Neg}(\ith(j))) \wedge
+x_i \in Y\} \\
+=&~ \set(\texttt{Remove}(\set(r \sqcap \texttt{Neg}(\ith(j))),i))
+\end{align*}
+\begin{align*}
+\{Y-x_j ~\vert~ x_j \in Y \wedge Y \in \set(r)\} =&~ \set(\texttt{Remove}(\set(r),j))
+\end{align*}
+
+Also gilt nun insgesamt:
+\begin{align*}
+x_i \ww x_j \Leftrightarrow&~ \underbrace{\set(\texttt{Remove}(\set(r \cap
+\texttt{Neg}(\ith(j))), i))}_{f_1: \bol} \subseteq
+\underbrace{\set(\texttt{Remove}(\set(r),j))}_{f_2: \bol}\\
+\Leftrightarrow&~ f_1 \sqsubseteq f_2\\
+\Leftrightarrow&~ f_1 \sqcap \overline{f_2} = \0
+\end{align*}
+\qed
+\end{bw}
+
+\begin{ex}
+$\set(r) = \{\{x_1,x_2,x_3\}, \{x_1,x_3\}, \{x_2,x_3\}\}$\\
+$\set(\texttt{Remove}(r,1)) = \{\{x_2,x_3\},\{x_3\}\}$\\
+Bildchen...
+\end{ex}
+
+\begin{ms}
+Die Funktion
+\begin{align*}
+\texttt{Remove}(a,i) = 
+\begin{cases} 
+\cons(x_i,\mathds{O}_{i+1},\then(a)) &, \text{ falls } \var(a)=x_i\\
+\cons(\var(a),\texttt{Remove}(\then(a),i), \texttt{Remove}(\el(a),i))
+  &, \text{ falls } \var(a) > x_i \\
+a &, \text{ sonst}
+\end{cases}
+\end{align*}
+erf\"ullt die Gleichung 
+\begin{align*}
+\set(\texttt{Remove}(a,i)) = \{Y-x_i ~\vert~ Y \in \set(a) \wedge x_i
+\in Y\}
+\end{align*}
+\end{ms}
+
+\begin{algrem}
+\texttt{Remove}($a$,$i$)
+\begin{minipage}{0.85\textwidth}
+\begin{empheq}[box=\fbox]{align*}
+\text{if } \var(a) = x_i &\text{ then return } (\cons(x_i, \mathds{O}_{i+1},
+\then(a))\\
+&\text{ elseif } \exists r \text{ in CT with } (a,i,r) \text{ then
+  return } r \text{ with } (a,i,r) \text{ in CT }\\
+&\text{ else } r:= \cons(\var(a), \texttt{Remove}(\then(a),i),
+\texttt{Remove}(\el(a),i))\\
+&\text{\hspace{0.7cm} add } (a,i,r) \text{ to CT }\\
+&\text{\hspace{0.7cm} return } r
+\end{empheq}
+\end{minipage}
+\end{algrem}
+\end{document}
+
