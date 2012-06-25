@@ -48,6 +48,7 @@
 \newtheorem{algequ}[mdef]{Algorithmus Equiv}
 \newtheorem{algneg}[mdef]{Algorithmus Negation}
 \newtheorem{algrem}[mdef]{Algorithmus Remove}
+\newtheorem{algdec}[mdef]{Algorithmus Decisive}
 \newtheorem{binsys}[mdef]{Bin\"are Synthese bei QOBDDs}
 \newtheorem{apply-robdd}[mdef]{Algorithmus Apply bei ROBDDs}
 
@@ -1459,7 +1460,7 @@ $0$\\
   \overline{x_2} \cdot x_3$
 \end{mex}
 
-\begin{ms}
+\begin{ms}\label{sat:anz}
   Sei \bolf ~Boolesche Funktion, die durch ein QOBDD dargestellt
   wird. Dann ist die Anzahl der erf\"ullenden Belegungen gegeben durch
   $\underline{anz}(a)$, wobei anz rekursiv wie folgt definiert
@@ -2007,7 +2008,7 @@ Y \in W \Leftrightarrow \text{ Es gibt Weg } w \text{ von } r \text{
 \end{ms}
 
 \begin{mdef}
-Es sei $g$ ein QOBDD mit Knotenmengen $V$ gegeben. Dann ist die
+Es sei ein QOBDD $g$ mit Knotenmengen $V$ gegeben. Dann ist die
 Funktion $\underline{set}:V \rightarrow 2^X$ definiert durch:
 \begin{align*}
   \set(a) = \begin{cases} \{\eins(w) \mid w \text{ ist Weg von } a
@@ -2018,10 +2019,35 @@ Funktion $\underline{set}:V \rightarrow 2^X$ definiert durch:
 \end{align*}
 \qed
 \end{mdef}
-Wenn \sg einfach Spiel und $r$ die Wurzel des dargestellten QOBDDs,
-dann gilt $\set(r) = \mathcal{W}$.
 
 \begin{ms}
+Es seien $g$ QOBDD und $a$ innerer Knoten. Dann gilt:
+\begin{align*}
+\set(a) = \{Y+\var(a) ~\vert~ Y \in \set(\then(a)) \cup \set(\el(a))\}
+\end{align*}
+\end{ms}
+
+\begin{bw}
+\begin{align*}
+\set(a) =&~ \{ eins(w) ~\vert~ w \text{ Weg von } a \text{ nach }
+\mathds{I}\}\\
+=&~ \{ eins(w) ~\vert~ w \text{ Weg von } a \text{ nach } \mathds{I}
+~\wedge~ w_1 \text{ 1-Pfeil}\} \cup eins(w) ~\vert~ w \text{ Weg von } a \text{ nach } \mathds{I}
+~\wedge~ w_1 \text{ 0-Pfeil}\} \\
+=&~ \{ eins(w)+\var(a) ~\vert~ w \text{ Weg von } \then(a) \text{ nach
+} \mathds{I}\} \cup \{ eins(w) ~\vert~ w \text{ Weg von } \el(a)
+  \text{ nach } \mathds{I}\} \\
+=&~ \{ Y+\var(a) ~\vert~ \exists\text{ Weg } w \text{ von } \then(a) \text{ nach }
+\mathds{I} \text{ mit } Y = eins(w)\} \cup \set(\el(a))\\
+=&~\{Y+\var(a) ~\vert~ Y \in \set(\then(a) \cup \set(\el(a)\}
+\end{align*}
+\qed
+\end{bw}
+
+Wenn \sg ein einfaches Spiel ist und $r$ die Wurzel des dargestellten QOBDDs,
+dann gilt $\set(r) = \mathcal{W}$.
+
+\begin{ms}\label{sat:fiq}
 Es sei \sg ein GMS mit gewichteter Darstellung \gms. Definiere f\"ur
 alle $i \in \{1, \dots, n+1\}$ und $q \in \mathds{R}$ (die Funktion
 $f:\{1, \dots, n+1\} \times \mathds{R} \rightarrow QOBDD$):
@@ -2515,5 +2541,255 @@ erf\"ullt die Gleichung
 \end{empheq}
 \end{minipage}
 \end{algrem}
+
+\begin{mex}
+Sei $X = \{x_1, x_2, x_3,x_4\}, \pi = (x_1,x_2,x_3)$\\
+$\set(a) = \{\{x_1,x_2,x_3,x_4\}, \{x_1,x_2,x_4\}, \{x_1,x_3,x_4\},
+\{x_1,x_4\}, \{x_2,x_3,x_4\}, \{x_2,x_4\}, \{x_3,x_4\}, \{x_4\}\}$\\
+$\set(\texttt{Remove}(a,3))= \{\{x_1,x_2,x_4\},\{x_1,x_4\},
+\{x_2.x_4\}, \{x_4\}\}$
+\end{mex}
+
+\begin{mex}
+Siehe Tabelle \ref{tab:wwr}.
+\begin{table}
+\begin{centering}
+\begin{tabular}[h]{|c|c|c|c|c|c|c|}
+\hline $\ww$ & CDU/CSU & SPD & FDP & Die Linke & Die Gr\"unen \\
+\hline CDU/CSU & X & O & O & O & O \\
+\hline SPD & X & X & Y & Y & O \\
+\hline FDP & X & X & X & Y & O \\
+\hline Die Linke & X & X & X & X & O \\
+\hline Die Gr\"unen & X & X & X & X & X \\
+\hline
+\end{tabular}
+
+
+\begin{tabular}[h]{|c|c|c|c|c|c|c|}
+\hline $\approx_I$ & CDU/CSU & SPD & FDP & Die Linke & Die Gr\"unen \\
+\hline CDU/CSU & X & O & O & O & O \\
+\hline SPD & O & X & X & X & O \\
+\hline FDP & O & X & X & X & O \\
+\hline Die Linke & O & X & X & X & O \\
+\hline Die Gr\"unen & O & O & O & O & X \\
+\hline
+\end{tabular}
+
+\begin{tabular}[h]{|c|c|c|c|c|c|c|}
+\hline $\prec_I$ & CDU/CSU & SPD & FDP & Die Linke & Die Gr\"unen \\
+\hline CDU/CSU & O & O & O & O & O \\
+\hline SPD & X & O & O & O & O \\
+\hline FDP & X & O & O & O & O \\
+\hline Die Linke & X & O & O & O & O \\
+\hline Die Gr\"unen & X & X & X & X & O \\
+\hline
+\end{tabular}
+\caption{Alle Eintr\"age bis auf die Ys ergeben sich aus der Quote
+  ($w(x) < w(y) \Rightarrow x \ww y$)}
+\end{centering}
+\label{tab:wwr}
+\end{table}
+\end{mex}
+
+\subsection{Eigenschaften von einfachen Spielen}
+Bisher wurde nur zwischen GMS und VGMS unterschieden.
+
+\begin{mdef}
+Ein eifnach Spiel \sg hei\ss t 
+\begin{itemize}
+\item[(1)] \underline{echt}, falls f\"ur alle $Y \in \W$ gilt: $X
+  \setminus Y \not \in \W$
+\item[(2)] \underline{fest}, falls f\"ur alle $Y \in 2^X \setminus W$ gilt: $X
+  \setminus Y \in W$
+\item[(3)] \underline{entscheidend}, falls es echt \emph{und}
+  fest ist
+\item[(4)] \underline{dual-gleichwertig}, falls es echt \emph{oder}
+  fest ist
+\end{itemize}
+\qed
+\end{mdef}
+
+\begin{ms}
+F\"ur alle einfachen Spiele \sg gilt:
+\begin{align*}
+(X, \W) \text{ entscheidend } \Leftrightarrow \vert \W \vert =
+2^{\vert X \vert -1}
+\end{align*}
+\end{ms}
+
+\begin{bw}
+Definiere $\Phi: 2^X \rightarrow 2^X, ~\Phi(Y) = X \setminus Y$. Dann
+gilt $\Phi^2 = id$, also $\Phi$ bijektiv.
+\begin{align*}
+(X,\W) \text{ echt } \Leftrightarrow&~ \Phi(\W) \subseteq 2^X \setminus \W\\
+\Rightarrow&~ \vert \W \vert = \vert \Phi(\W) \vert \leq \vert 2^X
+\setminus \W \vert\\
+(X,\W) \text{ fest } \Leftrightarrow&~ \Phi(2^X \setminus \W)
+\subseteq \W\\
+\Rightarrow&~ \vert 2^X \setminus \W \vert = \vert \Phi(2^X \setminus
+\W) \vert
+\leq \vert W \vert
+\end{align*}
+\qed
+\end{bw}
+
+\begin{ms}
+Ist \sg ein GMS, so gilt:
+\begin{itemize}
+\item[(1)] \sg ist echt oder fest
+\item[(2)] $\vert \W = 2^{\vert X \vert -1} \Rightarrow (X,\W)$
+  entscheidend
+\end{itemize}
+\end{ms}
+
+\begin{bw}
+(1) Es sei $(Q,w)$ gewichtete Darstellung und \sg weder echt noch
+fest.
+\begin{align*}
+(X,\W) \text{ nicht echt } \Rightarrow \exists Y \in 2^X: Y \in \W
+~\wedge~ X \setminus Y \in \W
+\end{align*}
+Dann gilt f\"ur so ein $Y$:
+\begin{align*}
+\sum_{x \in Y} w(x) \geq Q \text{ und } \sum_{x \in X \setminus Y}
+w(x) \geq X \text{ also auch } \sum_{x \in X} w(x) = \sum_{x \in
+  Y} w(x) + \sum_{x \in X \setminus Y} \geq 2 \cdot Q
+\end{align*}
+\begin{align*}
+(X,\W) \text{ nicht fest } \Rightarrow \exists Z \in 2^X: Z \in 2^X
+\setminus \W ~\wedge~ X \setminus Z \in 2^X \setminus \W
+\end{align*}
+Dann gilt f\"ur so ein $YZ$:
+\begin{align*}
+\sum_{x \in Z} w(x) < Q \text{ und } \sum_{x \in X \setminus Z}
+w(x) < X \text{ also insgesamt } \sum_{x \in X} w(x) = \sum_{x \in
+  Z} w(x) + \sum_{x \in X \setminus Z} < 2 \cdot Q
+\end{align*}
+Widerspruch!\\
+
+(2)
+Sei $\vert \W \vert = 2^{\vert X \vert -1}$, aber $(X,\W)$ nicht
+entscheidend.\\
+\emph{Fall 1:} Es sei \sg echt, aber nicht fest.
+\begin{align*}
+(X,W) \text{ echt } \Leftrightarrow&~ \Phi(\W) \subseteq 2^X \setminus
+\W \\
+\Rightarrow&~ \vert \W \vert \leq \vert 2^x \setminus \W \vert
+\end{align*}
+Da $\vert \W \vert = 2^{\vert X \vert -1}$ gilt und $(\W, 2^X \setminus \W)$
+eine Partition bilden, gilt:
+\begin{align*}
+\vert W \vert = \vert 2^X \setminus \W \vert = \vert \Phi(\W) \vert
+\end{align*}
+Also gilt $\Phi(\W) = 2^X \setminus \W$. Und damit auch $\W =
+\Phi(\Phi(\W)) = \Phi(2^X \setminus \W)$. Also insgesamt $\Phi(2^X
+\setminus \W) \subseteq \W$, d.h. \sg ist fest.\\
+Widerspruch!\\
+\qed
+\end{bw}
+
+\begin{algdec}
+Der folgende Algorithmus testet, ob ein GMS \sg entscheidend ist.\\
+\texttt{Decisive}($Q$,$w$)
+\begin{minipage}{0.8\textwidth}
+\begin{empheq}[box=\fbox]{align*}
+  \text{(1)}&\text{ Berechne das QOBDD zur Darstellung des Spiels}\\
+    &\text{ mit Hilfe von \hyperref[sat:fiq]{Satz \ref{sat:fiq}}}\\
+  \text{(2)}&\text{ Z\"ahle in diesem QOBDD die Anzahl } m \text{ der
+    erf\"ullenden Belegungen}\\
+  &\text{ nach \hyperref[sat:325]{Satz
+      \ref{sat:anz}}}\\
+  \text{(3)}&\text{ return } m=2^{\vert X \vert -1}
+\end{empheq}
+\end{minipage}
+\newline
+
+\qed
+\end{algdec}
+
+\begin{mdef}
+Sei \sg einfaches Spiel.
+\begin{itemize}
+\item[(1)] Eine Koalition $Y \in 2^X$ hei\ss t \emph{blockierend},
+  falls $X \setminus Y \not \in \W$.
+\item[(2)] Es hei\ss t $\W^d = \{ Y \in 2^X ~|~ Y \text{ blockierend}\}$
+  \emph{Dual} von $\W$.
+\item[(3)] $(X, \W^d)$ ist das zu \sg \emph{duale einfache} Spiel.
+\end{itemize}
+\qed
+\end{mdef}
+Beachte dabei, dass $Y \in \W^d$ und $Y \subseteq Z \Rightarrow Z \in
+\W^d$ gilt.
+
+\begin{mex}
+(1) (fest und echt) \\
+$X = \{x_1,x_2,x_3\}, ~\W =
+\{\{x_1,x_2,x_3\},\{x_1,x_2\},\{x_1,x_3\},\{x_2,x_3\}\}$\footnote{Bei $W =
+  W^d$ spricht man von einem Selbstdual.}
+\begin{table}[h]
+\begin{tabular}[h]{|c||c|c|c|c|c|c|c|c|}
+\hline $x_1$ & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 1\\
+\hline $x_2$ & 0 & 0 & 1 & 1 & 0 & 0 & 1 & 1\\
+\hline $x_3$ & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 1\\
+\hline $\W$ & 0 & 0 & 0 &1 & 0 & 1 & 1 & 1\\
+\hline $\W^d$ & 0 & 0 & 0 & 1 & 0 & 1 & 1 & 1\\
+\hline
+\end{tabular}
+\end{table}
+
+(2) (nicht fest, aber echt)\\
+$X = \{x_1, x_2,x_3\}, ~\W = \{\{x_1, x_2, x_3\},\{x_2,x_3\}\}$
+\begin{table}[h]
+\begin{tabular}[h]{|c||c|c|c|c|c|c|c|c|}
+\hline $x_1$ & 0 & 0 & 0 & 0 & 1 & 1 & 1 & 1\\
+\hline $x_2$ & 0 & 0 & 1 & 1 & 0 & 0 & 1 & 1\\
+\hline $x_3$ & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 1\\
+\hline $\W$ & 0 & 0 & 0 &1 & 0 & 0 & 0 & 1\\
+\hline $\W^d$ & 0 & 1 & 1 & 1 & 0 & 1 & 1 & 1\\
+\hline
+\end{tabular}
+\end{table}
+\end{mex}
+
+\begin{ms}
+Es sei \sg einfaches Spiel. Dann gelten die \"Aquivalenzen:
+\begin{itemize}
+\item[(1)] $(X,\W)$ echt $\Leftrightarrow \W \subseteq \W^d$
+\item[(2)] $(X,\W)$ fest $\Leftrightarrow \W^d \subseteq \W$
+\end{itemize}
+\end{ms}
+
+\begin{bw}
+(1) \glqq $\Rightarrow$\grqq~ Sei $Y \in 2^X$, dann gilt:
+\begin{align*}
+Y \in \W \Rightarrow&~ X \setminus Y \in 2^X \setminus \W & \text{
+  wegen } (X,\W)
+\text{ echt}\\
+\Leftrightarrow&~ Y \in \W^d & \text{ Def. von } \W^d
+\end{align*}
+Also $\W \subseteq W^d$.\\
+\glqq $\Leftarrow$\grqq~ Seien $\W \subseteq W^d$ und $Y \in 2^X$.
+\begin{align*}
+Y \in W \Rightarrow&~ Y \in W^d & \text{ wegen } \W \subseteq \W^d\\
+\Leftrightarrow&~ X \setminus Y \in 2^x \setminus \W & \text{ Def. von
+ echt}
+\end{align*}
+Also ist \sg echt.\\
+
+(2) Analog.\\
+% \glqq $\Rightarrow$\grqq~ Sei $Y \in 2^X $, dann gilt:
+% \begin{align*}
+% Y \in 2^X \setminus \W \Rightarrow&~ X \setminus Y  \in \W\\
+% \Leftrightarrow&~ X \setminus Y \not \in  2^X \setminus \W
+% \end{align*}
+% Also $W^d \subseteq \W$.\\
+% \glqq $\Leftarrow$\grqq~ Seien $W^d \subseteq \W$ und $Y \in 2^X$.
+% \begin{align*}
+% Y \in \W^d \Rightarrow&~ Y \in \W \\
+% \Leftrightarrow&~ Y \not \in 2^X \setminus \W
+% \end{align*}
+
+\qed
+\end{bw}
 \end{document}
 
