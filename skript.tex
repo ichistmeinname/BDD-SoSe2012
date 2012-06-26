@@ -2595,7 +2595,7 @@ Siehe Tabelle \ref{tab:wwr}.
 Bisher wurde nur zwischen GMS und VGMS unterschieden.
 
 \begin{mdef}
-Ein eifnach Spiel \sg hei\ss t 
+Ein einfaches Spiel \sg hei\ss t 
 \begin{itemize}
 \item[(1)] \underline{echt}, falls f\"ur alle $Y \in \W$ gilt: $X
   \setminus Y \not \in \W$
@@ -2791,5 +2791,123 @@ Also ist \sg echt.\\
 
 \qed
 \end{bw}
+F\"ur $a$ als QOBDD-Knoten mit $\var(a)=x_i$ soll im Folgenden gelten:
+\begin{align*}
+\text{ (*) } \set(\texttt{Compl}(a)) = \{ Y \in 2^{\{x_1,\dots,x_n\}}
+~|~ \{x_1, \dots, x_n\} \setminus Y \in \set(a)\}
+\end{align*}
+
+\begin{ms}
+Es sei \sg einfaches Spiel, dargestellt durch QOBDD mit Wurzel
+$r$. Dann gilt
+\begin{align*}
+(X,\W) \text{ echt } \Leftrightarrow \text{ Das QOBDD }
+\texttt{Compl}(r) \sqcap r \text{ ist gleich dem QOBDD zur Darstellung
+  von } \0
+\end{align*}
+\end{ms}
+
+\begin{bw}
+\begin{align*}
+(X,\W) \text{ echt } \Leftrightarrow&~ \W \subseteq \W^d & \text{
+  Def. von echt}\\
+\Leftrightarrow&~ W \subseteq \{Y \in 2^X ~|~ X \setminus Y \not \in
+\W\} & \text{ Def. von } \W^d\\
+\Leftrightarrow&~ \set(r) \subseteq \{Y \in 2^X ~|~ X \setminus Y \not
+\in \set(r)\} & \W = \set(r)\\
+\Leftrightarrow&~ \set(r) \subseteq \{Y \in 2^x ~|~ X \setminus Y \in
+\set(\texttt{Neg}(r))\} & \text{ Eig. von \texttt{Neg} }\\
+\Leftrightarrow&~ \set\underbrace{(r)}_{f_1} \subseteq
+\set(\underbrace{\texttt{Compl}(\texttt{Neg}(r))}_{f_2}) &
+\text{(*)}\\
+\Leftrightarrow&~ f_1 \sqsubseteq f_2 \\
+\Leftrightarrow&~ \overline{f_2} \sqcap f_1 = \0\\
+\Leftrightarrow&~ \texttt{Neg}(\texttt{Compl}(\texttt{Neg}(r))) \sqcap
+r \text{ ist QOBDD f\"ur } \0\\
+\Leftrightarrow&~ \texttt{Compl}(r) \sqcap r \text{ ist QOBDD f\"ur } \0
+\end{align*}
+\qed
+\end{bw}
+
+\begin{ms}
+Es sei \sg einfaches Spiel, dargestellt durch QOBDD mit Wurzel
+$r$. Dann gilt:
+\begin{align*}
+(X,\W) \text{ fest } \Leftrightarrow \text{Das QOBDD }
+\texttt{Neg}(\texttt{Compl}(r) \sqcap \texttt{Neg}(r) \text{ ist gleich
+  dem QOBDD zur Darstellung von } \0
+\end{align*}
+\end{ms}
+
+\begin{bw}
+\begin{align*}
+(X,\W) \text{ fest } \Leftrightarrow&~ \W^d \subseteq \W \\
+\Leftrightarrow&~ \{Y \in 2^X ~|~ X \setminus Y \not \in \W \}
+\subseteq \W\\
+\Leftrightarrow&~ \{Y \in 2^X ~|~ X \setminus Y \not \in \set(r) \}
+\subseteq \set(r)\\
+\Leftrightarrow&~ \{Y \in 2^X ~|~ X \setminus Y \in
+\set(\texttt{Neg} (r)\} \subseteq \set(r)\\
+\Leftrightarrow&~
+\set(\underbrace{\texttt{Compl}(\texttt{Neg}(r)}_{f_1})
+\subseteq \set\underbrace{(r)}_{f_2}\\
+\Leftrightarrow&~ f_1 \sqsubseteq f_2\\
+\Leftrightarrow&~ \overline{f_2} \sqcap f_1 = \0\\
+\Leftrightarrow&~ \texttt{Neg}(r) \sqcap
+\texttt{Compl}(texttt{Neg}(r)) \text{ ist das QOBDD f\"ur } \0
+\end{align*}
+\qed
+\end{bw}
+
+Sei $a$ wieder QOBDD-Knoten mit $\var(a) = x_i$. Dann wissen wir
+schon, dass gilt:
+\begin{align*}
+\set(a) = \{eins(w) ~|~ w \text{Weg von } a \text{ nach } \mathds{I}\}
+\end{align*}
+Daraus k\"onnen wir nun observieren, dass folgende Gleichheit f\"ur
+das Komplement gelten muss:
+\begin{align*}
+&\set(\texttt{Compl}(a)) =\{null(w) ~|~ w \text{ Weg von } a \text{
+  nach } \mathds{I}\}\\
+&\text{mit } null(p_1,\dots,p_m) =
+\{\var(\alpha(p_i)) ~|~ p_i \text{ ist 0-Pfeil } \wedge 1 \leq i \leq m\}
+\end{align*}
+
+\begin{ms}
+Sei $a$ QOBDD-Knoten. Die Funktion \texttt{Compl} mit
+\begin{align*}
+\texttt{Compl}(a) = \begin{cases} \mathds{I} &\text{, falls }
+  a=\mathds{I}\\
+\mathds{O} &\text{, falls } a = \mathds{O}\\
+\cons(\var(a),\texttt{Compl}(\el(a)), \texttt{Compl}(\then(a)))
+&\text{, sonst}
+\end{cases}
+\end{align*}
+erf\"ullt die Eigenschaft $\set(\texttt{Compl}(a)) = \{ Y \in
+2^{\{x_1,\dots,x_n\}} ~|~ \{x_1,\dots,x_n\} \setminus Y \in \set(a)\}$.
+\qed
+\end{ms}
+
+\begin{mex}
+Sei einfaches Spiel \sg gegeben mit $X = \{x_1,x_2,x_3,x_4\}$ und $\W$
+wie folgt:
+\begin{table}[h]
+\begin{tabular}[h]{|c||c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline $x_1$ &   0&0&0&0&0&0&0&0&1&1&1&1&1&1&1&1 \\
+\hline $x_2$ &   0&0&0&0&1&1&1&1&0&0&0&0&1&1&1&1 \\
+\hline $x_3$ &   0&0&1&1&0&0&1&1&0&0&1&1&0&0&1&1 \\
+\hline $x_4$ &   0&1&0&1&0&1&0&1&0&1&0&1&0&1&0&1 \\
+\hline \hline $\W$ &    0&0&0&0&0&0&1&1&0&1&0&1&1&1&1&1 \\
+\hline $\W^d$ &1&1&1&1&1&0&1&0&1&1&0&0&0&0&0&0 \\
+\hline
+\end{tabular}
+\end{table}
+\newline
+Dieses Spiel ist nicht fest und nicht echt.\\
+Sei $Z := \{x_2,x_4\}$, dann gilt $Z \not \in \W$ und $X \setminus Z
+\not \in \W$, also ist \sg nicht fest.\\
+Sei dann $Y := \{x_2,x_3\}$, dann gilt $Y \in \W$ und $X \setminus Y
+\in \W$, also \sg auch nicht echt.
+\end{mex} 
 \end{document}
 
