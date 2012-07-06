@@ -58,7 +58,7 @@
 \newcommand{\0}{\mathbf{0}}
 \newcommand{\1}{\mathbf{L}}
 \newcommand{\at}{\mathcal{A}t}
-\newcommand{\ba}{$(V, \sqcap, \sqcup, \bar~, \0, \1)$}
+\newcommand{\ba}{$(V, \sqcap, \sqcup, \bar~, \0, \1)~$}
 \newcommand{\bel}{$V: X \rightarrow \mathds{B}$}
 \newcommand{\bol}{\mathds{B}^n \rightarrow \mathds{B}}
 \newcommand{\bolf}{$f: \bol~$}
@@ -150,7 +150,7 @@ Kurze Wiederholung von Junktoren:
 
 Die Negation ($\neg$) bindet am st\"arksten, danach die Konjunktion
 ($\wedge$) und Disjunktion ($\vee$) und zuletzt die Implikation
-($\rightarrow$) sowie die \"Aquivalenz ($\leftrightarrow$) (Vorrangregeln).
+($\rightarrow$) sowie die \"Aquivalenz ($\leftrightarrow$) (Vorrangsregeln).
 
 \begin{ex}
 $X = \{a,b,c,d,e\}$\\
@@ -168,7 +168,7 @@ $\rightsquigarrow \neg a \vee \neg b \vee (c
  
 \begin{mdef} Eine \emph{Belegung} ist eine Funktion $v: X \rightarrow
   \mathds{B}$. Zu $a \in X$ hei\ss t $v(a)$ die \emph{Belegung} von
-  $a$ mittels der Belegung. \qed
+  $a$. \qed
 \end{mdef}
 
 \begin{mdef} Die Funktionen $\bar{ }: \mathds{B} \rightarrow
@@ -200,7 +200,7 @@ $a \cdot b$ & $0$ & $0$ & $0$ & $1$ \\
 \item $\val(\neg \phi) = \overline{\val(\phi)}$ f\"ur $\phi \in \ax$
 \item $\val(\phi \vee \psi) = \val(\phi) + \val(\psi)$ f\"ur alle $\phi,
   \psi \in \ax$
-\item $\val(\phi \wedge \val(\psi) = \val(\phi) \cdot \val(\psi)$
+\item $\val(\phi \wedge \psi) = \val(\phi) \cdot \val(\psi)$
   f\"ur alle $\phi, \psi \in \ax$
 \item $\val(\phi \rightarrow \psi) = \overline{\val(\phi)} +
   \val(\psi)$ f\"ur alle $\phi, \psi \in \ax$
@@ -220,12 +220,13 @@ $\phi, \psi \in \ax$ definiert durch:\\
 $\phi$ und $\psi$ sind \emph{logisch \"aquivalent}, falls $\phi
 \Leftrightarrow \psi$ gilt. \qed
 \end{mdef}
+
 \begin{mdef}
 Die Relation $\Rightarrow ~ \subseteq \ax \times \ax$ ist f\"ur alle
 $\phi, \psi \in \ax$ definiert durch:\\
 \begin{equation*}
 \phi \Rightarrow \psi :\Longleftrightarrow \text{ f\"ur alle } v \in
-\mathbf{B}^X \text{ gilt, wenn } \val{\phi}=1 \text{, dann }
+\mathds{B}^X \text{ gilt, wenn } \val{\phi}=1 \text{, dann }
 \val{\psi}=1
 \end{equation*}
 $\phi$ \emph{impliziert logisch} $\psi$, falls $\phi
@@ -235,15 +236,14 @@ $\phi$ \emph{impliziert logisch} $\psi$, falls $\phi
 \begin{ms} F\"ur alle $\phi, \psi \in \ax$ gelten:
 \begin{enumerate} 
 \item $\phi \Leftrightarrow \psi$ ist \"aquivalent zu $\val(\phi
-  \leftrightarrow \psi)=1$ f\"ur alle $v \in \mathbf{B}^X$
-\item $phi \Rightarrow \psi$ ist \"aquivalent zu $\val(\phi
-  \rightarrow \psi = 1$ f\"ur alle $v \in \mathds{B}^X$
+  \leftrightarrow \psi)=1$ f\"ur alle $v \in \mathds{B}^X$
+\item $\phi \Rightarrow \psi$ ist \"aquivalent zu $\val(\phi
+  \rightarrow \psi) = 1$ f\"ur alle $v \in \mathds{B}^X$
 \end{enumerate}
 \qed
 \end{ms}
 
-\begin{ms} 
-
+\begin{ms}
 \begin{enumerate}
 \item $\Leftrightarrow$ ist \"Aquivalenzrelation auf $\ax$,
   d.h. reflexiv, symmetrisch und transitiv
@@ -369,7 +369,7 @@ y \\
 \begin{ex}
 \begin{enumerate}
 \item $(V, \sqcap, \sqcup, \sqsubseteq)$
-\item $(\mathds{B}, \cdot, +, \Leftarrow)$
+\item $(\mathds{B}, \cdot, +, \Rightarrow)$
 \item $(2^M, \cap, \cup, \subseteq)$
 \item $(\mathds{N}, \underline{ggT}, \underline{kgV}, \setminus)$
 \item $(\mathds{N}, \underline{min}, \underline{max}, \le)$
@@ -430,7 +430,7 @@ Gleichheit & $=$ & $\leftrightarrow$
 \caption{Vergleich der Booleschen Algebra und Aussagenlogik}
 \end{table}
 
-\begin{ms} 
+\begin{ms} \label{s127}
 Sei $(V, \sqcap, \sqcup, \bar ~, \mathbf{O}, \mathbf{L})$ eine
 Boolesche Algebra. Dann gelten f\"ur alle $x,y \in V$ folgende
 Eigenschaften:
@@ -457,8 +457,7 @@ dass man $\sqcap$ und $\sqcup$ sowie $\0$ und $\1$ vertauscht.
 Es sei $(V,\sqcap, \sqcup, \bar~, \0, \1)$ eine Boolesche Algebra,
 dann hei\ss t $a \in V$ \emph{Atom}, falls $a \not= \0$ und
 f\"ur alle $x \in V$ gilt $x \sqsubseteq a \Rightarrow x = \0 \vee x =
-a$. \\
-$\ax$ sei die Menge der Atome von $V$.
+a$. $\at(V)$ sei die Menge der Atome von $V$.\\
 \qed
 \end{mdef}
 
@@ -485,7 +484,7 @@ $a \sqcap b \sqsubseteq a$, und $a \sqcap b = b$, da $a \sqcap b =
 b$. Also gilt $a=b$ und das widerspricht $a \not= b$.\\
 (2) $a \not \sqsubseteq x \Leftrightarrow a \sqcap \overline{x} \not =
 a$.\\ Da $a \sqcap \overline{x} \sqsubseteq a$ folgt $a \sqcap
-\overline{x} = \0$. Also $a \sqsubset \overline{x}$ nach Satz 1.2.7
+\overline{x} = \0$. Also $a \sqsubset \overline{x}$ nach \hyperref[s127]{Satz 1.2.7}
 (3).\\
 (3)
 \begin{eqnarray*}
@@ -543,7 +542,7 @@ Sei $b \in A$, d.h. $b = a_j$ f\"ur ein $j \in \{1, \dots, n\}$. Dann
 gilt $b \in \at(V)$ und $b \sqsubseteq \bigsqcup_{i=1}^{n} a_i$ (da $b
 \sqcup \bigsqcup_{i=1}^{n} a_i = a_j \sqcup \bigsqcup_{i=1}^{n} a_i =
 \bigsqcup_{i=1}^{n} a_i$). Die Definition von $f$ bringt letztendlich
-$b \in f(\bigsqcup_{i=1}^{n} a_i)$.
+$b \in f(\bigsqcup_{i=1}^{n} a_i)$.\\
 \qed
 \end{bw}
 
@@ -662,7 +661,7 @@ Im Folgenden werden wir das Nicod-Nor und Sheffer-Nand verwenden.
   \mathds{B}$ mit $x \triangle y = \overline{x \cdot y}$
 \end{enumerate}
 
-\begin{ms} ~ \\
+\begin{ms}
 \begin{enumerate}
 \item Jede Boolesche Funktion $f: \mathds{B}^n \rightarrow \mathds{B}$
   ist durch $\triangledown$ (bzw. durch $\triangle$) darstellbar.
@@ -684,7 +683,7 @@ x \cdot y &=& \overline{\overline{x \cdot y}} = \overline{\bar x +
 \bar x &=& \overline{x \cdot x} = x \triangle x
 \end{eqnarray}
 Analog f\"ur $\triangledown$.\\
-(2) Sei $\otimes \mathds{B} \times \mathds{B} \rightarrow \mathds{B}$,
+(2) Sei $\otimes: \mathds{B} \times \mathds{B} \rightarrow \mathds{B}$,
 so dass jede Funktion $f: \mathds{B}^n \rightarrow \mathds{B}$ nur
 durch $\otimes$ und Variablen darstellbar ist.\\
 $0 \otimes 0 = 0$ erlaubt nicht, $\bar ~$ darzustellen, da $\bar 0 =
@@ -725,13 +724,13 @@ Sei $X = \{x_1, \dots, x_n\}$ Menge von Booleschen Variablen.
   $f_{\phi}: \mathds{B}^n \rightarrow \mathds{B}$, so dass f\"ur alle
   Belegungen $V: X \rightarrow \mathds{B}$ gilt:
 \begin{equation*}
-f(v(x_1), \dots, v(x_n)) = \underline{val}_v(\phi)
+f_{\phi}(v(x_1), \dots, v(x_n)) = \underline{val}_v(\phi)
 \end{equation*}
 \item[b)] Zu jeder Booleschen Funktion $f: \mathds{B}^n \rightarrow
   \mathds{B}$ gibt es $\phi_f \in \ax$, so dass f\"ur alle Belegungen
   $V: X \rightarrow \mathds{B}$ gilt:
 \begin{equation*}
-f_{\phi}(v(x_1), \dots, v(x_n)) = \underline{val}_v(\phi_f)
+f(v(x_1), \dots, v(x_n)) = \underline{val}_v(\phi_f)
 \end{equation*}
 \end{enumerate}
 
@@ -745,6 +744,7 @@ $b$ & 0 & 0 & 1 & 1 & 0 & 0 &1 &1 \\
 $c$ & 0 & 1 &0 & 1 & 0 & 1 & 0 & 1\\
 \hline $f_{\phi}(a,b,c)$ & 1 & 1 & 1 & 1 & 0 & 0  & 1 & 0 
 \end{tabular}
+
 Und daraus ergibt sich dann die Funtkion $f_{\phi}(a,b,c)= \bar a + (\overline{\bar b + c})+ \bar a = \bar a +
 b \cdot \bar c$.\\
 
@@ -754,7 +754,7 @@ Sei $V: X \rightarrow \mathds{B}$ Belegung. Dann
 y \vee z) \vee \neg x) \\
 & = & \underline{val}_v(\neg x) + \val(\neg (\neg y \vee z)) +
 \val(\neg x) \\
-& = & \overline{v(x)} + \overline{\val(\neg y \vee z)} +
+& = & \overline{v(x)} + \val(\overline{\neg y \vee z}) +
 \overline{v(z)} \\
 & = & \overline{v(x)} + \overline{\overline{v(y)} + v(z)} +
 \overline{v(x)} \\
@@ -831,7 +831,7 @@ y_n)= f(y_1, \dots, y_{i-1}, 1, y_{i+1}, \dots, y_n)
 und der \underline{negative Co-Faktor} definiert als
 \begin{equation*}
 f_{\overline{x_i}}: \mathds{B}^n \rightarrow \mathds{B}^n,
-f_{\overline{x_i}}(y_1, \dots, y_n) = f_{\overline{x_i}}(y_1, y_{i-1},
+f_{\overline{x_i}}(y_1, \dots, y_n) = f(y_1, y_{i-1},
 0, y_{i+1}, \dots, y_n).
 \end{equation*}
 \qed
@@ -843,7 +843,8 @@ Im Folgenden wird die \underline{Shannon-Zerlegung} verwendet:
 
 \begin{mdef}
 Die Projektionsfunktion $x_i: \bol$ ist f\"ur $i, 1 \leq i \leq n$
-definiert durch $x_i(y_1, \dots, y_n) = y_i$.
+definiert durch $x_i(y_1, \dots, y_n) = y_i$.\\
+\qed
 \end{mdef}
 
 F\"ur die Operatoren der Booleschen Algebra bedeutet das wie folgt:\\
@@ -876,8 +877,8 @@ y_n)+(\overline{x_i} \cdot f_{\overline{x_i}})(y_1, \dots, y_n)\\
 \overline{x_i}(y_1, \dots, y_n) \cdot f_{\overline{x_i}}(y_1, \dots,
 y_n)\\
 &=& y_i \cdot f(y_1, \dots, y_{i-1}, 1, y_{i+1}, \dots, y_n) +
-x_i(y_1, \dots, y_n) \cdot f(y_1, \dots, y_{i-1}, 0, y_{i+1}, \dots,
-y_n) \\
+\overline{x_i}(y_1, \dots, y_n) \cdot f_{\overline{x_i}}(y_1, \dots,
+y_n)\\
 &=& y_i \cdot f(y_1, \dots, y_{i-1}, 1, y_{i+1}, \dots,y_n) +
 \overline{y_i} \cdot f(y_1, y_{i-1}, 0, y_{i+1}, \dots, y_n) 
 \end{eqnarray*}
@@ -909,7 +910,7 @@ die \underline{Existenzialquantifizierung} und
 \forall x_i f: \mathds{B}^n \rightarrow \mathds{B}, \hspace{0.5cm}
 \forall x_i f= f_{x_i} \cdot f_{\overline{x_i}}
 \end{equation*}
-die \underline{Allquatifizierung} von $f$ nach $x_i$.
+die \underline{Allquantifizierung} von $f$ nach $x_i$.
 \qed
 \end{mdef}
 
@@ -945,7 +946,11 @@ f(y_1,\dots, 0, \dots, y_n) = 1
 \qed
 \end{bw}
 
+%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
+%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Bin\"are Entscheidungsdiagramme}
 Folgende Themen sollen behandelt werden:
@@ -957,7 +962,7 @@ Folgende Themen sollen behandelt werden:
 \end{itemize}
 
 \subsection{Graphentheoretische Grundlagen}
-Es soll die \"ubliche Konvention gelte:
+Es soll die \"ubliche Konvention gelten:
 $g=(V,P), V \not = \emptyset, \vert V \vert < \infty \text{ Knotenmenge },
 P \subseteq V \times V \text{ Pfeilmenge }, (x,y) \in P, x,y \in V$.
 
@@ -988,7 +993,7 @@ von $x$.\\
 Sei $g=(V,P,\alpha, \omega)$ ein Graph.
 \begin{enumerate}
 \item[(1)] Eine Folge $(p_1,\dots,p_n) \in P^+$\footnote{nichtleere
-    Liste bzw $n \geq 1$} hei\ss t \underline{Weg} von $\alpha{p_1}$
+    Liste bzw $n \geq 1$} hei\ss t \underline{Weg} von $\alpha{(p_1)}$
   nach $\omega(p_n)$, falls f\"ur alle $i, 1 \leq i \leq n$ gilt:
   $\omega(p_i) = \alpha(p_{i+1})$. Sind alle paarweise verschieden, so
   hei\ss t der Weg \underline{einfach}.
@@ -1017,8 +1022,8 @@ Seien $g = (V,P,\alpha, \omega)$ Graph und $x \in V$. Dann hei\ss t
 $x$
 \begin{enumerate}
 \item[(1)] \underline{Quelle}, falls $d^-g(x)=0$ ($\omega(p) \not = x$
-  f\"ur alle $p \ in P$)
-\item[(2)] \underline{Senke}, falls $d^+g(x)=0$ ($\alpha(p) \not x$
+  f\"ur alle $p \in P$)
+\item[(2)] \underline{Senke}, falls $d^+g(x)=0$ ($\alpha(p) \not = x$
   f\"ur alle $p \in P$)
 \item[(3)] \underline{Wurzel}, falls jeder Knoten $y \in V$ von $x$
   aus erreichbar ist.
@@ -1077,12 +1082,12 @@ $\mathds{I}$ und $\mathds{O}$ hat
   $\underline{var}(\mathds{O})=0$).
 \item[(3)] $\underline{size}(g)=\vert V \vert$ ist die Anzahl der
   \underline{inneren Knoten}, $\underline{height}(g)$ bezeichnet die
-  L\"ange eines l\"angsten Weges von Wurzel zu einer
+  L\"ange eines l\"angsten Weges von der Wurzel zu einer
   Senke\footnote{H\"ohe von $g$}, $\underline{width}(g)= \max_{i \in
     \{1,\dots,n\}} \vert V_i \vert$ mit $V_i = \{ a \in V \vert
   \underline{var}(a)=x_i\}$.
-\item[(4)]  Zu $a \in V$ hei\ss t ist 1-Nachfolger.
-  $\underline{then}(a)$ und 0-Nachfolger $\underline{else}(a)$
+\item[(4)]  Zu $a \in V$ hei\ss t ist 1-Nachfolger,
+  $\underline{then}(a)$ und 0-Nachfolger $\underline{else}(a)$.
 \end{enumerate}
 \qed
 \end{mbez}
@@ -1125,13 +1130,12 @@ Sei $g=(V,P,\alpha,\omega)$ ein OBDD und $a \in V$ innerer Knoten. Das
 durch $a$ induzierte Unter-OBDD $g'=(V',P',\alpha\,\omega')$ ist wie
 folgt definiert:
 \begin{itemize}
-\item[(1)] $V' = \{b \in V ~\vert~ b \text{ von } a \text{ aus erreichbar
-  }\}$
+\item[(1)] $V' = \{b \in V ~\vert~ b \text{ von } a \text{ aus erreichbar}\}$
 \item[(2)] $P' = \{p \in P ~\vert~ \alpha(p) \in V' \wedge \omega(p) \in
   V'\} $
-\item[(3)] $\alpha' : V' \rightarrow P'$ ist definiert durch $\alpha'(p) =
+\item[(3)] $\alpha' : P' \rightarrow V'$ ist definiert durch $\alpha'(p) =
   \alpha(p)$ f\"ur alle $p \in P$.\\
-  $\omega' : V' \rightarrow P'$ ist definiert durch $\omega'(p) =
+  $\omega' : P' \rightarrow V'$ ist definiert durch $\omega'(p) =
   \omega(p)$ f\"ur alle $p \in P$.
 \item[(4)] Jedes $a \in V'$ hat die gleiche Marke wie in g.
 \item[(5)] Jeder $p \in P$ hat den selben Typ (0- oder 1-Pfeil) wie in g.
@@ -1142,12 +1146,8 @@ folgt definiert:
 \begin{mdef}
 Seien $g=(V,P,\alpha,\omega)$ und $g'=(V',P',\alpha',\omega')$
 OBDDs. Dann hei\ss en $g$ ung $g'$
-\underline{strukturgleich}\footnote{auch: isomorph}, fall es bijektive
-Funktionen 
-\begin{equation*}
-\Phi: V \rightarrow V' \hspace{1cm} \Psi: P \rightarrow P'
-\end{equation*}
-gibt, so dass f\"ur alle $p \in P$ gilt
+\underline{strukturgleich}\footnote{auch: isomorph}, falls es bijektive
+Funktionen $\Phi: V \rightarrow V'$ und $\Psi: P \rightarrow P'$ gibt, so dass f\"ur alle $p \in P$ gilt
 \begin{itemize}
 \item[(1)] $\alpha'(\Psi(p)) = \Phi(\alpha(p))$
 \item[(2)] $\omega'(\Psi(p)) = \Phi(\omega(p))$
@@ -1195,15 +1195,15 @@ Sei $g$ ein OBDD \"uber Variablenmenge $X$. Dann hei\ss t $g$
 \item[(1)] \underline{vollst\"andig}, falls f\"ur jeden Weg
   $(p_1,\dots,p_n)$ von der Wurzel zu einer Senke ($\mathds{I}$ oder
   $\mathds{O}$) gilt: $n = \vert X \vert$.
-\item[(2)] \underline{quasi-reduziert} (kurz: QOBDD), falls er
+\item[(2)] \underline{quasi-reduziert} (kurz: QOBDD), falls es
   vollst\"andig ist und es keine \"aquivalenten Knoten gibt.
 \item[(3)] \underline{reduziert} (kurz: ROBDD), falls es keine
   redundanten und \"aquivalenten Knoten besitzt.
 \end{itemize}
-Ist $\Pi = (x_1, \dots, x_n)$ die Variablenordnung, so nennt man
+Ist $\pi = (x_1, \dots, x_n)$ die Variablenordnung, so nennt man
 $V_i=\{a \in V ~\vert~ \underline{var}(a)=x_i\}$ die $i$-te
 \underline{Schicht}, wobei $1 \leq i \leq n$ und $\{\mathds{I},
-\mathds{O}\}$ hei\ss t die $n+1$-te Schicht.
+\mathds{O}\}$ hei\ss t die $n+1$-te Schicht.\\
 \qed
 \end{mdef}
 
@@ -1234,7 +1234,7 @@ $f_w$ die von $g$ dargestellte Funktion.
 \end{mdef}
 
 \begin{mex}
-Sei $X=\{x,y,z,u\}$ und $\Pi=(x,y,z,u)$. \\
+Sei $X=\{x,y,z,u\}$ und $\pi=(x,y,z,u)$. \\
 Hier fehlt ein Bild.\\
 \begin{eqnarray*}
 f_a(x,y,z,u) &=& x \cdot f_c(x,y,z,u) + \overline{x} \cdot
@@ -1257,7 +1257,7 @@ f_{\mathds{O}}(x,y,z,u)) + \overline{z} \cdot 0) + \\ && \overline{x} \cdot
 Sei $g$ ein OBDD. Zu einem Weg $(p_1,\dots,p_n)$ von der Wurzel $w$
 bis zur $\mathds{I}$ (1-Senke) sei definiert:
 \begin{equation*}
-m(p_1,\dots,p_k) = \sum_{i=1}^{k}
+m(p_1,\dots,p_k) = \prod_{i=1}^{k}
 \underline{var}(\alpha(p_i))^{a_i}
 \end{equation*}
 wobei $x_i^{a_i}$ wie in Def. 1.3.4 und $a_i=1$ gdw. $p_i$ 1-Pfeil bzw. $a_i=0$ gdw. $p_i$
@@ -1275,7 +1275,7 @@ Induktion \"uber die H\"ohe des OBDDs\\
 Hier fehlen wieder Bilder.\\
 1. Fall: \\
 \begin{eqnarray*}
-f_w(x_1,\dots,x_n)= x \cdot f_{mathds{I}}(x_1,\dots,x_n) +
+f_w(x_1,\dots,x_n)= x \cdot f_{\mathds{I}}(x_1,\dots,x_n) +
 \overline{x} \cdot f_{\mathds{O}}(x_1,\dots,x_n) = x
 \end{eqnarray*}
 Dann gilt $\mathcal{W}=\{(p)\}$, $m((p)) = x$ und schlie\ss lich
@@ -1326,7 +1326,11 @@ BILD
 \subsection{OBDDs f\"ur wichtige Funktionen}
 Gaaaanz viele Bilder.
 
+%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%
 \newpage
+%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%
 
 \section{Algorithmen}
 \begin{itemize}
@@ -1362,7 +1366,7 @@ Verweise auf Records mit $a.var = x_i$ (bzw. $a.var = i$).
 \end{obdd}
 
 \begin{mex}
-BIldchen
+Bildchen
 \end{mex}
 
 \begin{algred}
@@ -1494,11 +1498,11 @@ von $g$ wird $\underline{level}(a)$ definiert als
   \begin{align*}
     \underline{anz}(\mathds{I})=& ~1\\
     \underline{anz}(\mathds{O})=& ~0\\
-    \underline{anz}(a) =& ~\frac{1}{2} \cdot
+    \underline{anz}(a) =& ~\frac{1}{2} \cdot \biggr(
   \underline{anz}(\underline{then}(a)) \cdot
-  2^{~\underline{level}(\underline{then}(a) - \underline{level}(a))} +
+  2^{~\underline{level}(\underline{then}(a)) - \underline{level}(a)} +
   \underline{anz}(\underline{else}(a)) \cdot
-  2^{~\underline{level}(\underline{else}(a) - \underline{level}(a))}
+  2^{~\underline{level}(\underline{else}(a)) - \underline{level}(a)} \biggr)
   \end{align*}
 \qed
 \end{ms}
@@ -1558,7 +1562,7 @@ Gegeben sei eine Funktion \bolf und die Negation $\bar f :
 f(x_1,\dots,x_n)=\overline{f(x_1,\dots,x_n)}$.\\
 Problem: Ist $g$ OBDD zur Darstellung von $f$, wie bekommt man OBDD
 zur Darstellung von $\bar f$?\\
-Bei ROBDDS und QOBDDs wird mit $bar g$ das BDD bezeichnet, welches
+Bei ROBDDS und QOBDDs wird mit $\bar g$ das BDD bezeichnet, welches
 $\bar f$ darstellt. Man erh\"alt also die ROBDD- bzw. QOBDD-Negation
 durch die Berechnung von $\bar g$ aus $g$.
 
@@ -1571,7 +1575,7 @@ $\mathds{I}$ vertauscht, so stellt $\bar g$ die Funktion $\bar f$ dar.
 
 \begin{mdef}
 Es seien $g_1, g_2$ OBDDs mit fester Variablenordnung und $x \in X$,
-so dass $\underline{var}(a) <x$ f\"ur alle Kntoen $a$ von $g_1$ und
+so dass $\underline{var}(a) <x$ f\"ur alle Knoten $a$ von $g_1$ und
 $g_2$ gilt. Dann ist OBDD $\underline{cons}(x,g_1,g_2)$ festgelegt
 durch:
 \begin{align*}
@@ -1614,7 +1618,7 @@ Seien $f_1,f_2:\mathds{B}^n \rightarrow \mathds{B}$ dargestellt durch
 OBDDs $g_1$ bzw. $g_2$. Dann wird durch $\underline{cons}(x,g_1,g_2)$
 die Funktion \bolf ~dargestellt, wobei gilt:
 \begin{equation*}
-f = x \cdot f_1 + \bar x f_2
+f = x \cdot f_1 + \bar x \cdot f_2
 \end{equation*}
 \qed
 \end{ms}
@@ -1677,7 +1681,7 @@ Konstruiere $g_1$ und $g_2$ OBDD zur Darstellung von $f_1 \otimes f_2$
 (\underline{Bin\"are Synthese}).\\
 
 Im Folgenden sollen zwei Ans\"atze zur Bin\"aren Synthese betrachtet
-werden
+werden.
 \begin{itemize}
 \item[(1)] ITH-Funktion (if-then-else)
 \item[(2)] Apply-Funktion
@@ -1709,7 +1713,7 @@ Die Apply-Funktion soll nun im weiteren Verlauf verwendet werden.
 \begin{ms}
 Es sei $f,g: \bol$ und $\otimes: \mathds{B} \times \mathds{B}
 \rightarrow \mathds{B}$. Dann gilt f\"ur jede Variable $x_i$
-(aufgefasst als Projektion $x_i: \mathds{B}_n \rightarrow \mathds{B}$: 
+(aufgefasst als Projektion) $x_i: \mathds{B}_n \rightarrow \mathds{B}$: 
 \begin{align*}
 f \otimes g = x_i \cdot (f_{x_i} \otimes g_{x_i}) + \overline{x_i}
 \cdot (f_{\overline{x_i}} \otimes g_{\overline{x_i}})
@@ -1772,15 +1776,14 @@ Dann berechnet \texttt{Apply}($g_1,g_2,\otimes$) das QOBDD f\"ur $g_1
 \end{binsys}
 
 \begin{mex}
-(1)\\
-Seien $x$ und $f_1,f_2: \mathds{B}^n \rightarrow \mathds{B}, \otimes:
+(1) Seien $x$ und $f_1,f_2: \mathds{B}^n \rightarrow \mathds{B}, \otimes:
 \mathds{B} \rightarrow \mathds{B}$ gegeben mit 
 \begin{align*}
 &f_1(x) = x, ~ f_2(x) = \bar x, ~ \otimes = \cdot\\
 &(f_1 \cdot f_2)(x) = x \cdot \bar x = 0
 \end{align*}
 ($\texttt{Apply}(g_1,g_2,\otimes)$ durchf\"uhren, wobei $g_1$ und $g_2$
-  QOBDDs zu $f_1$ bzw. $f_2$. \\
+  QOBDDs zu $f_1$ bzw. $f_2$.) \\
 
 (2) $X={x,y}, ~\pi=(x,y), ~f_1: \mathds{B}^2 \rightarrow \mathds{B},
 ~f_2: \mathds{B}^2 \rightarrow \mathds{B}, ~\otimes: \mathds{B}
@@ -1847,7 +1850,12 @@ Pakete:
 \item[(5)] \href{http://www.informatik.uni-kiel.de/~progsys/relview/}{RelView} und \href{http://korsika.informatik.uni-kiel.de/kure2/}{Kure}
 \end{itemize}
 
+
+%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
 \newpage
+%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
 
 \section{Anwendung der Spieltheorie}
 In diesem Abschnitt werden folgende Themen bearbeitet:
@@ -1858,7 +1866,7 @@ In diesem Abschnitt werden folgende Themen bearbeitet:
 \end{itemize}
 
 Kurz zur Spieltheorie:\\
-Man unterscheidet zwischen Konkurrierenden und kooperierenden
+Man unterscheidet zwischen konkurrierenden und kooperierenden
 Spielen. Zweiteres wird noch in einfache Spiele\footnote{Nutzen ist
   hier 0 oder 1} und nicht-einfach Spiele unterteilt.\\
 Mit BDDs kann man einfache Spiele besonders gut berechnen. Einfache
@@ -1866,17 +1874,17 @@ Spiele entsprechen monotonen Funktionen.
 
 \subsection{Einfache Spiele und QOBDDs}
 \begin{mdef}
-Ein faches Spiel ist ein Par $(X,\mathcal{W})$ mit:
+Ein einfaches Spiel ist ein Paar $(X,\mathcal{W})$ mit:
 \begin{itemize}
 \item[(1)] $X$ endliche, nicht-leere Menge von Spielern
 \item[(2)] $\mathcal{W} \subseteq 2^X$ mit der Eigenschaft, dass f\"ur
   alle $Y,Z \in 2^X$:
 \begin{align*}
-Y \subseteq \mathcal{W} \wedge Y \subseteq Z \Rightarrow Z \in W
+Y \in \mathcal{W} \wedge Y \subseteq Z \Rightarrow Z \in W
 \end{align*}
 $Y \in 2^X$ hei\ss t \underline{Koalition}, $Y \in \mathcal{W}$ hei\ss
-t \underline{gewinnende Koalition} und $Y \in 2^{X \setminus
-  \mathcal{W}}$ \underline{verlierende Koalition}.
+t \underline{gewinnende Koalition} und $Y \in 2^{X} \setminus
+  \mathcal{W}$ \underline{verlierende Koalition}.
 \qed
 \end{itemize}
 \end{mdef}
@@ -1897,14 +1905,12 @@ $X=\{x_1,\dots, x_n\}, \lbrack Q; w_1, \dots, w_n \rbrack$, wobei $w_i
 = w(x_i)$ und $Q$ Quote.
 
 \begin{mex}\label{mex:413}
-(1)\\
-Sei $(X,\mathcal{W})$ mit $X = \{x_1,x_2, x_3\}, ~ \mathcal{W} =
+(1) Sei $(X,\mathcal{W})$ mit $X = \{x_1,x_2, x_3\}, ~ \mathcal{W} =
 \{\{x_1,x_2\}, \{x_2,x_3\}, \{x_1,x_3\}.\{x_1,x_2,x_3\}\}$.\\
 $(X,\mathcal{W})$ ist GMS mit $\lbrack 6;5,5,1\rbrack$.\\
 Warum sind die Mengen in $\mathcal{W}$ gewinnende Koalitionen?\\
 
-(2)\\
-Sei $(X,\mathcal{W})$ einfaches Spiel, gegeben durch $X = \{ x_1, x_2,
+(2) Sei $(X,\mathcal{W})$ einfaches Spiel, gegeben durch $X = \{ x_1, x_2,
 x_2, x_4, x_5\}$ und $\lbrack 312; 239, 146, 93, 76, 68
 \rbrack$\footnote{oder $\lbrack 3; 2, 1, 1, 1, 0 \rbrack$ in der
   minimalen Variante}. Hierbei stehen die Elemente aus $X$ f\"ur die
@@ -1924,7 +1930,7 @@ $w^{(j)}: X \rightarrow \mathds{N}$ f\"ur alle $j \in \{1, \dots, k\}$
 gibt mit der Eigenschaft, dass f\"ur alle $Y \in 2^X$ gilt:
 \begin{align*}
 Y \in \mathcal{W} \Leftrightarrow \forall j \in \{1, \dots, k\}:
-\sum_{x \in Y} w^{(j)}(x) = Q^{(j)}
+\sum_{x \in Y} w^{(j)}(x) \geq Q^{(j)}
 \end{align*}
 \qed
 \end{mdef}
@@ -1951,7 +1957,7 @@ VGMS kann dabei nicht auf GMS minimiert bzw. zur\"urckgef\"uhrt werden.
 \end{mex}
 
 \begin{mk}
-Bei einem eifnach Spiel \sg ist im Folgenden $X = \{x_1, \dots, x_n\}$
+Bei einem einfachen Spiel \sg ist im Folgenden $X = \{x_1, \dots, x_n\}$
 und $X$ ist auch die Menge der Variablen zur Definition von \bolf und
 der darstellenden QOBDDs Variablenordnung sei $\pi = (x_1, \dots, x_n)$.
 \qed
@@ -1969,7 +1975,7 @@ definiert durch:
 \end{mdef}
 
 \begin{mdef}
-Sei \sg enfaches Spiel. 
+Sei \sg einfaches Spiel. 
 \begin{itemize}
 \item[(1)] Eine Funktion \bolf stellt \sg dar, falls f\"ur alle $Y \in
   2^X$ gilt:
@@ -2023,7 +2029,7 @@ Funktion $\underline{set}:V \rightarrow 2^X$ definiert durch:
 \begin{ms}
 Es seien $g$ QOBDD und $a$ innerer Knoten. Dann gilt:
 \begin{align*}
-\set(a) = \{Y+\var(a) ~\vert~ Y \in \set(\then(a)) \cup \set(\el(a))\}
+\set(a) = \{Y+\var(a) ~\vert~ Y \in \set(\then(a))\} \cup \set(\el(a))
 \end{align*}
 \end{ms}
 
@@ -2032,14 +2038,14 @@ Es seien $g$ QOBDD und $a$ innerer Knoten. Dann gilt:
 \set(a) =&~ \{ eins(w) ~\vert~ w \text{ Weg von } a \text{ nach }
 \mathds{I}\}\\
 =&~ \{ eins(w) ~\vert~ w \text{ Weg von } a \text{ nach } \mathds{I}
-~\wedge~ w_1 \text{ 1-Pfeil}\} \cup eins(w) ~\vert~ w \text{ Weg von } a \text{ nach } \mathds{I}
+~\wedge~ w_1 \text{ 1-Pfeil}\} \cup \{eins(w) ~\vert~ w \text{ Weg von } a \text{ nach } \mathds{I}
 ~\wedge~ w_1 \text{ 0-Pfeil}\} \\
 =&~ \{ eins(w)+\var(a) ~\vert~ w \text{ Weg von } \then(a) \text{ nach
 } \mathds{I}\} \cup \{ eins(w) ~\vert~ w \text{ Weg von } \el(a)
   \text{ nach } \mathds{I}\} \\
 =&~ \{ Y+\var(a) ~\vert~ \exists\text{ Weg } w \text{ von } \then(a) \text{ nach }
 \mathds{I} \text{ mit } Y = eins(w)\} \cup \set(\el(a))\\
-=&~\{Y+\var(a) ~\vert~ Y \in \set(\then(a) \cup \set(\el(a)\}
+=&~\{Y+\var(a) ~\vert~ Y \in \set(\then(a)\} \cup \set(\el(a))
 \end{align*}
 \qed
 \end{bw}
@@ -2058,7 +2064,7 @@ $f:\{1, \dots, n+1\} \times \mathds{R} \rightarrow QOBDD$):
 \cons(x_i, f(i+1, q-w_i), f(i+1, q)) &,\text{ sonst }
 \end{cases}\\
 &\text{Dann gilt:}\\
-&\set(f(i,q)) = ~\biggr \{ Y \in 2^{\{x_1,\dots,x_n\}} \biggr \vert \sum_{x \in Y} w(x)
+&\set(f(i,q)) = ~\biggr \{ Y \in 2^{\{x_i,\dots,x_n\}} \biggr \vert \sum_{x \in Y} w(x)
 \geq q \biggr\}\\
 &\text{Insbesondere gilt:}\\
 &\set(f(1,Q))= ~\biggr\{Y \in 2^X \biggr \vert \sum_{x \in Y} w(x) \geq
@@ -2086,7 +2092,7 @@ Fall 2. $q > 0$. Dann gilt
 \in 2^X$
 \begin{align*}
   Y \in \set(f(i,q)) \Leftrightarrow &~ Y \in
-  \set(\cons(x_i,f(i+1,q-w_i,
+  \set(\cons(x_i,f(i+1,q-w_i),
   f(i+1, q))\\
   \Leftrightarrow &~ (Y \subseteq \{x_i, \dots, x_n\} \wedge x_i \in Y
   \wedge \sum_{x \in Y-x_i} w(x) \geq q - w_i) \\ &~\vee (Y \subseteq
@@ -2104,7 +2110,7 @@ Fall 2. $q > 0$. Dann gilt
 
 \begin{mex}
 Sei $X = \{x_1,x_2,x_3\}$ gewichtete Darstellung $\lbrack 6;
-5,5,1\rbrack$. Bestimmte $f(1,6)$.
+5,5,1\rbrack$. Bestimme $f(1,6)$.
 \end{mex}
 
 \subsection{Bestimmung von Schl\"usselspielern}
@@ -2151,6 +2157,7 @@ $y \in X \setminus \{x\}: y \text{ ist belanglos}$.
 Da $x$ Diktator ist, gilt $\mathcal{W}_{min} = \{\{x\}\}$. Ist $Y \in
 \mathcal{W}_{min}$, so gilt $Y = \{\{x\}\}$, also gilt $y
 \not \in Y$, da $y \not = x$. Damit ist $y$ belanglos.
+
 \qed
 \end{bw}
 
@@ -2160,7 +2167,7 @@ Diktator. Dabei sei $X =\{x_1,x_2,x_3,x_4\}$ mit gewichteter
 Darstellung $\lbrack 260; 277,181, 44, 17 \rbrack$.\\
 
 (2) Sei $X = \{x_1, \dots, x_15\}$ mit gewichteter Darstellung
-$\lbrack 39; 7, 7, 7, 7, 7, 1, ,1 ,1 ,1 ,1, 1, 1, 1, 1, 1
+$\lbrack 39; 7, 7, 7, 7, 7, 1 ,1 ,1 ,1 ,1, 1, 1, 1, 1, 1
 \rbrack$. Dieses Spiel modelliert den UN Sicherheitsrat. Die
 Darstellung als VGMS mit 2 GMS sieht dabei wie folgt aus:
 $\lbrack 5; 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \rbrack
@@ -2174,7 +2181,7 @@ GMS mit gewichteter Darstellung $\lbrack 12; 4, 4, 4, 2, 2, 1\rbrack$.
 \begin{ml}
 Es sei \sg einfach Spiel. Dann gilt f\"ur alle $x \in X$:
 \begin{align*}
-x \text{ belanglos } \Leftrightarrow \forall Y \in \mathcal{W}: Y-x
+x \text{ belanglos } \Leftrightarrow \forall~ Y \in \mathcal{W}: Y-x
 \in \mathcal{W}
 \end{align*}
 \end{ml}
@@ -2207,7 +2214,7 @@ x \text{ belanglos } \Leftrightarrow &~ \forall~ Y \in 2^X: Y \in \W
 &\text{ Sei nun } f \text{ eine Funktion, die QOBDD darstellt und }
 x=x_i. \text{ Dann gilt: }\\
 x_i \text{ belanglos } \Leftrightarrow &~ \forall~
-y_1,\dots,y_{n-1}:~ f(y_1,\dots,y_{i-1},1,y_{i+1},\dots, y_n)=f(y_1,\dots,y_{i-1},0,y_{i+1},\dots,y_n)
+y_1,\dots,y_n:~ f(y_1,\dots,y_{i-1},1,y_{i+1},\dots, y_n)=f(y_1,\dots,y_{i-1},0,y_{i+1},\dots,y_n)
 \end{align*}
 
 \begin{ms}
@@ -2378,7 +2385,7 @@ Y+x \in \W \Leftrightarrow &~ w(x) + \sum_{z \in Y} w(z) \geq Q\\
 Die Relation $\ww$ und $\approx_I$ auf $X$ sind f\"ur ein einfach
 Spiel \sg und alle Spieler $x,y \in X$ definiert durch:
 \begin{align*}
-x \prec_I y &\Leftrightarrow (x \ww y) ~\wedge~ \not(y \ww x)\\
+x \prec_I y &\Leftrightarrow (x \ww y) ~\wedge~ \neg(y \ww x)\\
 & \text{\glqq y echt w\"unschenswerter als x\grqq} 
 \end{align*}
 \begin{align*}
@@ -2457,13 +2464,13 @@ Die Voraussetzung f\"ur solch ein Vorgehen ist eine Operation
 
 \begin{ms}
 Es sei \sg einfaches Spiel. Dann sind f\"ur alle $x_i, x_j \in X$ mit
-$i \not \in j$ die folgenden Aussagen \"aquivalent:
+$i \not = j$ die folgenden Aussagen \"aquivalent:
 \begin{align*}
 \text{ (1) }& x_i \ww x_j\\
 \text{ (2) }& \text{Ist } g \text{ das QOBDD zur Darstellung von } (X,\W) \text{
   mit Wurzel } r \text{\, so ist }\\
-& \texttt{Remove}(r \cap
-\texttt{Neg}(\ith(j)),i) \cap \texttt{Neg}(\texttt{Remove}(r,j)) \text{
+& \texttt{Remove}(r \sqcap
+\texttt{Neg}(\ith(j)),i) \sqcap \texttt{Neg}(\texttt{Remove}(r,j)) \text{
   gleich dem QOBDD zur Darstellung von } \0: \bol
 \end{align*}
 \end{ms}
@@ -2485,19 +2492,24 @@ x_j \not \in Y\} =&~ \{Y-x_i ~\vert~ Y \in 2^{X-x_j} \wedge Y \in
 \set(r) \wedge x_i \in Y\} \\
 =&~ \{Y-x_i ~\vert~ Y \in \set(r \sqcap \texttt{Neg}(\ith(j))) \wedge
 x_i \in Y\} \\
-=&~ \set(\texttt{Remove}(\set(r \sqcap \texttt{Neg}(\ith(j))),i))
+=&~ \set(\texttt{Remove}(r \sqcap \texttt{Neg}(\ith(j)),i))
 \end{align*}
 \begin{align*}
-\{Y-x_j ~\vert~ x_j \in Y \wedge Y \in \set(r)\} =&~ \set(\texttt{Remove}(\set(r),j))
+\{Y-x_j ~\vert~ x_j \in Y \wedge Y \in \set(r)\} =&~ \set(\texttt{Remove}(r,j))
 \end{align*}
 
 Also gilt nun insgesamt:
 \begin{align*}
-x_i \ww x_j \Leftrightarrow&~ \underbrace{\set(\texttt{Remove}(\set(r \cap
-\texttt{Neg}(\ith(j))), i))}_{f_1: \bol} \subseteq
-\underbrace{\set(\texttt{Remove}(\set(r),j))}_{f_2: \bol}\\
+x_i \ww x_j \Leftrightarrow&~ \set(\underbrace{\texttt{Remove}(r \sqcap
+\texttt{Neg}(\ith(j)), i)}_{f_1: \bol}) \subseteq
+\set(\underbrace{\texttt{Remove}(r,j)}_{f_2: \bol})\\
 \Leftrightarrow&~ f_1 \sqsubseteq f_2\\
-\Leftrightarrow&~ f_1 \sqcap \overline{f_2} = \0
+\Leftrightarrow&~ f_1 \sqcap \overline{f_2} = \0\\
+\Leftrightarrow&~ \texttt{Remove}(r \sqcap
+\texttt{Neg}(\ith(j)), i) \sqcap
+\texttt{Neg}(\texttt{Remove}(r,j)) \\
+&\text{ ist QOBDD zur
+  Darstellung der Funktion } \0: \bol
 \end{align*}
 \qed
 \end{bw}
@@ -2612,7 +2624,7 @@ Ein einfaches Spiel \sg hei\ss t
 \begin{ms}
 F\"ur alle einfachen Spiele \sg gilt:
 \begin{align*}
-(X, \W) \text{ entscheidend } \Leftrightarrow \vert \W \vert =
+(X, \W) \text{ entscheidend } \Rightarrow \vert \W \vert =
 2^{\vert X \vert -1}
 \end{align*}
 \end{ms}
@@ -2637,7 +2649,7 @@ gilt $\Phi^2 = id$, also $\Phi$ bijektiv.
 Ist \sg ein GMS, so gilt:
 \begin{itemize}
 \item[(1)] \sg ist echt oder fest
-\item[(2)] $\vert \W = 2^{\vert X \vert -1} \Rightarrow (X,\W)$
+\item[(2)] $\vert \W \vert = 2^{\vert X \vert -1} \Rightarrow (X,\W)$
   entscheidend
 \end{itemize}
 \end{ms}
@@ -2659,7 +2671,7 @@ w(x) \geq X \text{ also auch } \sum_{x \in X} w(x) = \sum_{x \in
 (X,\W) \text{ nicht fest } \Rightarrow \exists Z \in 2^X: Z \in 2^X
 \setminus \W ~\wedge~ X \setminus Z \in 2^X \setminus \W
 \end{align*}
-Dann gilt f\"ur so ein $YZ$:
+Dann gilt f\"ur so ein $Z$:
 \begin{align*}
 \sum_{x \in Z} w(x) < Q \text{ und } \sum_{x \in X \setminus Z}
 w(x) < X \text{ also insgesamt } \sum_{x \in X} w(x) = \sum_{x \in
@@ -2685,6 +2697,8 @@ Also gilt $\Phi(\W) = 2^X \setminus \W$. Und damit auch $\W =
 \Phi(\Phi(\W)) = \Phi(2^X \setminus \W)$. Also insgesamt $\Phi(2^X
 \setminus \W) \subseteq \W$, d.h. \sg ist fest.\\
 Widerspruch!\\
+
+\emph{Fall 2:} Analog.\\
 \qed
 \end{bw}
 
@@ -2793,8 +2807,8 @@ Also ist \sg echt.\\
 \end{bw}
 F\"ur $a$ als QOBDD-Knoten mit $\var(a)=x_i$ soll im Folgenden gelten:
 \begin{align*}
-\text{ (*) } \set(\texttt{Compl}(a)) = \{ Y \in 2^{\{x_1,\dots,x_n\}}
-~|~ \{x_1, \dots, x_n\} \setminus Y \in \set(a)\}
+\set(\texttt{Compl}(a)) = \{ Y \in 2^{\{x_i,\dots,x_n\}}
+~|~ \{x_i, \dots, x_n\} \setminus Y \in \set(a)\}
 \end{align*}
 
 \begin{ms}
@@ -2834,7 +2848,7 @@ Es sei \sg einfaches Spiel, dargestellt durch QOBDD mit Wurzel
 $r$. Dann gilt:
 \begin{align*}
 (X,\W) \text{ fest } \Leftrightarrow \text{Das QOBDD }
-\texttt{Neg}(\texttt{Compl}(r) \sqcap \texttt{Neg}(r) \text{ ist gleich
+\texttt{Neg}(\texttt{Compl}(r) \sqcap \texttt{Neg}(r)) \text{ ist gleich
   dem QOBDD zur Darstellung von } \0
 \end{align*}
 \end{ms}
@@ -2844,7 +2858,7 @@ $r$. Dann gilt:
 (X,\W) \text{ fest } \Leftrightarrow&~ \W^d \subseteq \W \\
 \Leftrightarrow&~ \{Y \in 2^X ~|~ X \setminus Y \not \in \W \}
 \subseteq \W\\
-\Leftrightarrow&~ \{Y \in 2^X ~|~ X \setminus Y \not \in \set(r) \}
+\&~ \{Y \in 2^X ~|~ X \setminus Y \not \in \set(r) \}
 \subseteq \set(r)\\
 \Leftrightarrow&~ \{Y \in 2^X ~|~ X \setminus Y \in
 \set(\texttt{Neg} (r)\} \subseteq \set(r)\\
@@ -2854,7 +2868,7 @@ $r$. Dann gilt:
 \Leftrightarrow&~ f_1 \sqsubseteq f_2\\
 \Leftrightarrow&~ \overline{f_2} \sqcap f_1 = \0\\
 \Leftrightarrow&~ \texttt{Neg}(r) \sqcap
-\texttt{Compl}(texttt{Neg}(r)) \text{ ist das QOBDD f\"ur } \0
+\texttt{Compl}(\texttt{Neg}(r)) \text{ ist das QOBDD f\"ur } \0
 \end{align*}
 \qed
 \end{bw}
@@ -2884,7 +2898,7 @@ Sei $a$ QOBDD-Knoten. Die Funktion \texttt{Compl} mit
 \end{cases}
 \end{align*}
 erf\"ullt die Eigenschaft $\set(\texttt{Compl}(a)) = \{ Y \in
-2^{\{x_1,\dots,x_n\}} ~|~ \{x_1,\dots,x_n\} \setminus Y \in \set(a)\}$.
+2^{\{x_i,\dots,x_n\}} ~|~ \{x_i,\dots,x_n\} \setminus Y \in \set(a)\}$.
 \qed
 \end{ms}
 
